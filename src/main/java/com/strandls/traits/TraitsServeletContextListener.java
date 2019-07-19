@@ -12,7 +12,9 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -34,7 +36,7 @@ import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
  */
 public class TraitsServeletContextListener extends GuiceServletContextListener {
 
-	private final Logger logger = LoggerFactory.getLogger(TraitsServeletContextListener.class);
+	private static final Logger logger = LoggerFactory.getLogger(TraitsServeletContextListener.class);
 
 	@Override
 	protected Injector getInjector() {
@@ -56,10 +58,17 @@ public class TraitsServeletContextListener extends GuiceServletContextListener {
 
 				configuration = configuration.configure();
 				SessionFactory sessionFactory = configuration.buildSessionFactory();
+				
+				Map<String, String> props = new HashMap<String, String>();
+				props.put("javax.ws.rs.Application", ApplicationConfig.class.getName());
+				props.put("jersey.config.server.wadl.disableWadl", "true");
 
 				bind(SessionFactory.class).toInstance(sessionFactory);
 
-				serve("/*").with(GuiceContainer.class);
+				serve("/api/*").with(GuiceContainer.class,props);
+				
+				TraitsBeanConfig beanConfig = new TraitsBeanConfig();
+				beanConfig.config();
 			}
 		}, new TraitsControllerModule(), new TraitsServiceModule(), new TraitsDAOModule());
 

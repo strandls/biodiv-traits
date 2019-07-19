@@ -23,7 +23,7 @@ import com.strandls.traits.util.AbstractDAO;
  */
 public class FactsDAO extends AbstractDAO<Facts, Long> {
 
-	private Logger logger = LoggerFactory.getLogger(FactsDAO.class);
+	private static final Logger logger = LoggerFactory.getLogger(FactsDAO.class);
 
 	/**
 	 * @param sessionFactory
