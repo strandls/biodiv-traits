@@ -44,8 +44,8 @@ public class TraitsController {
 	@Produces(MediaType.TEXT_PLAIN)
 
 	@ApiOperation(value = "Dummy API Ping", notes = "Checks validity of war file at deployment", response = String.class)
-	public String ping() {
-		return "PONG";
+	public Response ping() {
+		return Response.status(Status.OK).entity("PONG").build();
 	}
 
 	@GET
@@ -55,9 +55,9 @@ public class TraitsController {
 
 	@ApiOperation(value = "Find Traits by Observation ID", notes = "Returns the key value pair of Tarits for a particular Observation", response = FactValuePair.class)
 	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Success"),
-			@ApiResponse(code = 400, message = "Invalid Input"),
-			@ApiResponse(code = 404, message = "Traits not found") })
+			@ApiResponse(code = 200, message = "Success",response = FactValuePair.class,responseContainer = "List"),
+			@ApiResponse(code = 400, message = "Invalid Input",response = String.class),
+			@ApiResponse(code = 404, message = "Traits not found",response = String.class) })
 
 	public Response getFacts(
 			@ApiParam(value = "ID of Show that needs to be fetched", required = true) @PathParam("observationId") String obvId) {
