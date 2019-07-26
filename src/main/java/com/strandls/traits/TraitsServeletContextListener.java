@@ -66,9 +66,6 @@ public class TraitsServeletContextListener extends GuiceServletContextListener {
 				bind(SessionFactory.class).toInstance(sessionFactory);
 
 				serve("/api/*").with(GuiceContainer.class,props);
-				
-				TraitsBeanConfig beanConfig = new TraitsBeanConfig();
-				beanConfig.config();
 			}
 		}, new TraitsControllerModule(), new TraitsServiceModule(), new TraitsDAOModule());
 
