@@ -15,5 +15,6 @@ public class ApiConstants {
 	// traits controller
 	public static final String PING = "/ping";
 	public static final String FACTSERVICE = "/factservice";
-	
+	public static final String IBP = "/ibp";
+
 }

@@ -32,7 +32,8 @@ import io.swagger.annotations.Tag;
  *
  */
 @Api("Traits Service")
-@SwaggerDefinition(tags = {	@Tag(name = "Traits Serivce to get Facts Value", description = "Rest endpoint for Observatin Service") })
+@SwaggerDefinition(tags = {
+		@Tag(name = "Traits Serivce to get Facts Value", description = "Rest endpoint for Observatin Service") })
 @Path(ApiConstants.V1 + ApiConstants.FACTSERVICE)
 public class TraitsController {
 
@@ -54,27 +55,43 @@ public class TraitsController {
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ApiOperation(value = "Find Traits by Observation ID", notes = "Returns the key value pair of Tarits for a particular Observation", response = FactValuePair.class)
-	@ApiResponses(value = { 
-			@ApiResponse(code = 200, message = "Success",response = FactValuePair.class,responseContainer = "List"),
-			@ApiResponse(code = 400, message = "Invalid Input",response = String.class),
-			@ApiResponse(code = 404, message = "Traits not found",response = String.class) })
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Success", response = FactValuePair.class, responseContainer = "List"),
+			@ApiResponse(code = 404, message = "Traits not found", response = String.class) })
 
 	public Response getFacts(
 			@ApiParam(value = "ID of Show that needs to be fetched", required = true) @PathParam("observationId") String obvId) {
-		
+
 		Long id;
 		try {
 			id = Long.parseLong(obvId);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
 		}
-		
+
 		List<FactValuePair> facts = services.getFacts(id);
-		if (!(facts.isEmpty()))
-			return Response.status(Status.OK).entity(facts).build();
-		else
-			return Response.status(Status.NOT_FOUND).build();
+		return Response.status(Status.OK).entity(facts).build();
+	}
+
+	@GET
+	@Path(ApiConstants.IBP + "/{traitId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+	
+	@ApiOperation(value = "Find Traits by Observation ID for ibp", notes = "Returns the key value pair of Tarits for a particular Observation", response = FactValuePair.class)
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Success", response = FactValuePair.class),
+			@ApiResponse(code = 404, message = "Traits not found", response = String.class) })
+
+	public Response getFactIbp(@PathParam("traitId") String traitId) {
+		try {
+			Long id = Long.parseLong(traitId);
+			FactValuePair fact = services.getFactIbp(id);
+			return Response.status(Status.OK).entity(fact).build();
+
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
 	}
 
 }

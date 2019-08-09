@@ -25,4 +25,10 @@ public class TraitsServicesImpl implements TraitsServices {
 		return facts;
 	}
 
+	@Override
+	public FactValuePair getFactIbp(Long id) {
+		FactValuePair fact = factsDao.getTraitvaluePairIbp(id);
+		return fact;
+	}
+
 }

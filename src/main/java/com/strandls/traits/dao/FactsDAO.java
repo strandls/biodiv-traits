@@ -48,25 +48,50 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 	}
 
 	@SuppressWarnings("unchecked")
+	public FactValuePair getTraitvaluePairIbp(Long factId) {
+		String qry = "select t.name , v.value from Facts f " + "left join Traits t on f.trait_instance_id = t.id "
+				+ "left join TraitsValue v on f.trait_value_id = v.id " + "where f.id = :id";
+		Session session = sessionFactory.openSession();
+		FactValuePair fact = null;
+		try {
+			Query<Object[]> query = session.createQuery(qry);
+			query.setParameter("id", factId);
+
+			Object[] result = query.getSingleResult();
+			fact = new FactValuePair(result[0].toString(), result[1].toString());
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+
+		return fact;
+	}
+
+	@SuppressWarnings("unchecked")
 	public List<FactValuePair> getTraitValuePair(Long id) {
 
-		String qry = "select t.name , v.value from Facts f "
-				+ "left join Traits t on f.trait_instance_id = t.id "
-				+ "left join TraitsValue v on f.trait_value_id = v.id "
-				+ "where f.object_id = :id";
+		String qry = "select t.name , v.value from Facts f " + "left join Traits t on f.trait_instance_id = t.id "
+				+ "left join TraitsValue v on f.trait_value_id = v.id " + "where f.object_id = :id";
 		Session session = sessionFactory.openSession();
-		Query<Object[]> query = session.createQuery(qry);
-		query.setParameter("id", id);
+		List<FactValuePair> fact = null;
 
-		List<Object[]> list = new ArrayList<Object[]>();
-		list = query.getResultList();
-		List<FactValuePair> fact = new ArrayList<FactValuePair>();
-		for(Object[] f:list)
-		{	
-			FactValuePair fvp= new FactValuePair(f[0].toString(),f[1].toString());
-			fact.add(fvp);
+		try {
+			Query<Object[]> query = session.createQuery(qry);
+			query.setParameter("id", id);
+
+			List<Object[]> list = new ArrayList<Object[]>();
+			list = query.getResultList();
+			fact = new ArrayList<FactValuePair>();
+			for (Object[] f : list) {
+				FactValuePair fvp = new FactValuePair(f[0].toString(), f[1].toString());
+				fact.add(fvp);
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
 		}
-		session.close();
 		return fact;
 	}
 
