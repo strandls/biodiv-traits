@@ -1,6 +1,6 @@
 {
   "modelPackage": "com.strandls.traits.pojo",
-  "apiPackage": "com.strandls.traits.controllers",
+  "apiPackage": "com.strandls.traits.controller",
   "invokerPackage": "com.strandls.traits",
   "groupId": "com.strandls.biodiv",
   "artifactId": "traits-client",

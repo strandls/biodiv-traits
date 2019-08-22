@@ -50,10 +50,8 @@ public class TraitsController {
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
-	@ApiOperation(value = "Find Traits by Observation ID", notes = "Returns the key value pair of Tarits for a particular Observation", response = FactValuePair.class)
-	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Success", response = FactValuePair.class, responseContainer = "List"),
-			@ApiResponse(code = 404, message = "Traits not found", response = String.class) })
+	@ApiOperation(value = "Find Traits by Observation ID", notes = "Returns the key value pair of Tarits for a particular Observation", response = FactValuePair.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "Traits not found", response = String.class) })
 
 	public Response getFacts(
 			@ApiParam(value = "ID of Show that needs to be fetched", required = true) @PathParam("observationId") String obvId) {
@@ -75,8 +73,7 @@ public class TraitsController {
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ApiOperation(value = "Find Traits by Observation ID for ibp", notes = "Returns the key value pair of Tarits for a particular Observation", response = FactValuePair.class)
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "Success", response = FactValuePair.class),
-			@ApiResponse(code = 404, message = "Traits not found", response = String.class) })
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "Traits not found", response = String.class) })
 
 	public Response getFactIbp(@PathParam("traitId") String traitId) {
 		try {
