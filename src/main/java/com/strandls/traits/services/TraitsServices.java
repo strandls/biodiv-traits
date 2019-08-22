@@ -14,5 +14,7 @@ import com.strandls.traits.pojo.FactValuePair;
 public interface TraitsServices {
 	
 	public List<FactValuePair> getFacts(Long id);
+	
+	public FactValuePair getFactIbp(Long id);
 
 }

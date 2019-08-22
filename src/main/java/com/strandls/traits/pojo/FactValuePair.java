@@ -3,11 +3,13 @@
  */
 package com.strandls.traits.pojo;
 
+import io.swagger.annotations.ApiModel;
+
 /**
  * @author Abhishek Rudra
  *
  */
-
+@ApiModel
 public class FactValuePair {
 
 	private String name;
