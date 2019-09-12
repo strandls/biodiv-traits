@@ -23,9 +23,9 @@
 		<openapi-generator-cli.version>4.0.3</openapi-generator-cli.version>
 
 		<!-- Project property -->
-		<war-name>traitsModule</war-name>
+		<war-name>traits-api</war-name>
 		<srcDir>src/main/webapp</srcDir>
-		<base-path>/traitsModule/api</base-path>
+		<base-path>/traits-api/api</base-path>
 		<location>com.strandls.traits</location>
 	</properties>
 
