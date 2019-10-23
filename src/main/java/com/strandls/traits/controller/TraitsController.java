@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -17,6 +18,7 @@ import javax.ws.rs.core.Response.Status;
 import com.google.inject.Inject;
 import com.strandls.traits.ApiConstants;
 import com.strandls.traits.pojo.FactValuePair;
+import com.strandls.traits.pojo.TraitsValuePair;
 import com.strandls.traits.services.TraitsServices;
 
 import io.swagger.annotations.Api;
@@ -46,25 +48,46 @@ public class TraitsController {
 	}
 
 	@GET
-	@Path("/{observationId}")
+	@Path("/{objectType}/{objectId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
-	@ApiOperation(value = "Find Traits by Observation ID", notes = "Returns the key value pair of Tarits for a particular Observation", response = FactValuePair.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "Traits not found", response = String.class) })
+	@ApiOperation(value = "Find Traits by objectType and Object ID", notes = "Returns the key value pair of Tarits for a particular Object", response = FactValuePair.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Traits not found", response = String.class) })
 
-	public Response getFacts(
-			@ApiParam(value = "ID of Show that needs to be fetched", required = true) @PathParam("observationId") String obvId) {
+	public Response getFacts(@PathParam("objectType") String objectType,
+			@ApiParam(value = "ID of Show that needs to be fetched", required = true) @PathParam("objectId") String objectId) {
 
-		Long id;
 		try {
-			id = Long.parseLong(obvId);
+			Long objId = Long.parseLong(objectId);
+			List<FactValuePair> facts = services.getFacts(objectType, objId);
+			return Response.status(Status.OK).entity(facts).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
 		}
 
-		List<FactValuePair> facts = services.getFacts(id);
-		return Response.status(Status.OK).entity(facts).build();
+	}
+
+	@POST
+	@Path(ApiConstants.CREATE + "/{objectType}/{objectId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Create facts for a Object", notes = "Returns the Success and failure", response = FactValuePair.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Traits not found", response = String.class),
+			@ApiResponse(code = 206, message = "Patially created", response = String.class) })
+
+	public Response createFacts(@PathParam("objectType") String objectType, @PathParam("objectId") String objectId,
+			@ApiParam List<FactValuePair> factValuePairs) {
+		try {
+			Long objId = Long.parseLong(objectId);
+			List<FactValuePair> result = services.createFacts(objectType, objId, factValuePairs);
+			if (result.isEmpty())
+				return Response.status(Status.CREATED).entity(null).build();
+			return Response.status(206).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
 	}
 
 	@GET
@@ -72,8 +95,8 @@ public class TraitsController {
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
-	@ApiOperation(value = "Find Traits by Observation ID for ibp", notes = "Returns the key value pair of Tarits for a particular Observation", response = FactValuePair.class)
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "Traits not found", response = String.class) })
+	@ApiOperation(value = "Find Traits by Traits ID for ibp", notes = "Returns the key value pair of Tarits", response = FactValuePair.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Traits not found", response = String.class) })
 
 	public Response getFactIbp(@PathParam("traitId") String traitId) {
 		try {
@@ -84,6 +107,26 @@ public class TraitsController {
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
 		}
+	}
+
+	@GET
+	@Path(ApiConstants.SPECIESID + "/{speciesId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find all Trait Values pair for Specific SpeciesId", notes = "Return the Key value pairs of Traits", response = TraitsValuePair.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Species Not Found", response = String.class) })
+
+	public Response getTraitList(@PathParam("speciesId") String speciesId) {
+
+		try {
+			Long sGroup = Long.parseLong(speciesId);
+			List<TraitsValuePair> result = services.getTraitList(sGroup);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+
 	}
 
 }

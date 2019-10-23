@@ -15,9 +15,10 @@
 		<property name="hbm2ddl.auto">update</property>
 
 		<property name="show_sql">true</property>
-		
-		<mapping class="com.strandls.traits.pojo.Facts"/>
-		<mapping class="com.strandls.traits.pojo.Traits"/>
-		<mapping class="com.strandls.traits.pojo.TraitsValue"/>
+
+		<mapping class="com.strandls.traits.pojo.Facts" />
+		<mapping class="com.strandls.traits.pojo.Traits" />
+		<mapping class="com.strandls.traits.pojo.TraitsValue" />
+		<mapping class="com.strandls.traits.pojo.TraitTaxonomyDefinition" />
 	</session-factory>
 </hibernate-configuration>

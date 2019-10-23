@@ -23,7 +23,9 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Scopes;
 import com.google.inject.servlet.GuiceServletContextListener;
+import com.strandls.taxonomy.controllers.TaxonomyServicesApi;
 import com.strandls.traits.controller.TraitsControllerModule;
 import com.strandls.traits.dao.TraitsDAOModule;
 import com.strandls.traits.services.Impl.TraitsServiceModule;
@@ -58,14 +60,15 @@ public class TraitsServeletContextListener extends GuiceServletContextListener {
 
 				configuration = configuration.configure();
 				SessionFactory sessionFactory = configuration.buildSessionFactory();
-				
+
 				Map<String, String> props = new HashMap<String, String>();
 				props.put("javax.ws.rs.Application", ApplicationConfig.class.getName());
 				props.put("jersey.config.server.wadl.disableWadl", "true");
 
 				bind(SessionFactory.class).toInstance(sessionFactory);
+				bind(TaxonomyServicesApi.class).in(Scopes.SINGLETON);
 
-				serve("/api/*").with(GuiceContainer.class,props);
+				serve("/api/*").with(GuiceContainer.class, props);
 			}
 		}, new TraitsControllerModule(), new TraitsServiceModule(), new TraitsDAOModule());
 

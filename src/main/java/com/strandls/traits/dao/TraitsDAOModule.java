@@ -14,8 +14,10 @@ public class TraitsDAOModule extends AbstractModule {
 
 	@Override
 	protected void configure() {
-	
+
 		bind(FactsDAO.class).in(Scopes.SINGLETON);
-	
+		bind(TraitTaxonomyDefinitionDao.class).in(Scopes.SINGLETON);
+		bind(TraitsValueDao.class).in(Scopes.SINGLETON);
+
 	}
 }

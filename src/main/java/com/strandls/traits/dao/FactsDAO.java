@@ -49,8 +49,9 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 
 	@SuppressWarnings("unchecked")
 	public FactValuePair getTraitvaluePairIbp(Long factId) {
-		String qry = "select t.name , v.value from Facts f " + "left join Traits t on f.trait_instance_id = t.id "
-				+ "left join TraitsValue v on f.trait_value_id = v.id " + "where f.id = :id";
+		String qry = "select t.id, t.name , v.id, v.value from Facts f "
+				+ "left join Traits t on f.traitInstanceId = t.id "
+				+ "left join TraitsValue v on f.traitValueId = v.id " + "where f.id = :id";
 		Session session = sessionFactory.openSession();
 		FactValuePair fact = null;
 		try {
@@ -58,7 +59,8 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 			query.setParameter("id", factId);
 
 			Object[] result = query.getSingleResult();
-			fact = new FactValuePair(result[0].toString(), result[1].toString());
+			fact = new FactValuePair(Long.parseLong(result[0].toString()), result[1].toString(),
+					Long.parseLong(result[2].toString()), result[3].toString());
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		} finally {
@@ -69,22 +71,26 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<FactValuePair> getTraitValuePair(Long id) {
+	public List<FactValuePair> getTraitValuePair(String objectType, Long objectId) {
 
-		String qry = "select t.name , v.value from Facts f " + "left join Traits t on f.trait_instance_id = t.id "
-				+ "left join TraitsValue v on f.trait_value_id = v.id " + "where f.object_id = :id";
+		String qry = "select t.id, t.name , v.id, v.value from Facts f "
+				+ "left join Traits t on f.traitInstanceId = t.id "
+				+ "left join TraitsValue v on f.traitValueId = v.id "
+				+ "where f.objectId = :id and f.objectType = :type";
 		Session session = sessionFactory.openSession();
 		List<FactValuePair> fact = null;
 
 		try {
 			Query<Object[]> query = session.createQuery(qry);
-			query.setParameter("id", id);
+			query.setParameter("id", objectId);
+			query.setParameter("type", objectType);
 
-			List<Object[]> list = new ArrayList<Object[]>();
-			list = query.getResultList();
+			List<Object[]> resultList = new ArrayList<Object[]>();
+			resultList = query.getResultList();
 			fact = new ArrayList<FactValuePair>();
-			for (Object[] f : list) {
-				FactValuePair fvp = new FactValuePair(f[0].toString(), f[1].toString());
+			for (Object[] result : resultList) {
+				FactValuePair fvp = new FactValuePair(Long.parseLong(result[0].toString()), result[1].toString(),
+						Long.parseLong(result[2].toString()), result[3].toString());
 				fact.add(fvp);
 			}
 		} catch (Exception e) {
