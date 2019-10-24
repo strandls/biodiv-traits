@@ -78,7 +78,7 @@ public class TraitsController {
 			@ApiResponse(code = 206, message = "Patially created", response = String.class) })
 
 	public Response createFacts(@PathParam("objectType") String objectType, @PathParam("objectId") String objectId,
-			@ApiParam List<FactValuePair> factValuePairs) {
+			@ApiParam(name = "facts") List<FactValuePair> factValuePairs) {
 		try {
 			Long objId = Long.parseLong(objectId);
 			List<FactValuePair> result = services.createFacts(objectType, objId, factValuePairs);
