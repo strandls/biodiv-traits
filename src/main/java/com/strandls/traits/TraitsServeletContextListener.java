@@ -69,6 +69,8 @@ public class TraitsServeletContextListener extends GuiceServletContextListener {
 				bind(TaxonomyServicesApi.class).in(Scopes.SINGLETON);
 
 				serve("/api/*").with(GuiceContainer.class, props);
+
+				filter("/*").through(SwaggerFilter.class);
 			}
 		}, new TraitsControllerModule(), new TraitsServiceModule(), new TraitsDAOModule());
 

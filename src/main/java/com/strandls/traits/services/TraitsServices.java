@@ -5,7 +5,10 @@ package com.strandls.traits.services;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.strandls.traits.pojo.FactValuePair;
+import com.strandls.traits.pojo.Facts;
 import com.strandls.traits.pojo.TraitsValuePair;
 
 /**
@@ -20,6 +23,8 @@ public interface TraitsServices {
 
 	public List<TraitsValuePair> getTraitList(Long speciesId);
 
-	public List<FactValuePair> createFacts(String objectType, Long objectId, List<FactValuePair> factList);
+	public List<FactValuePair> createFacts(HttpServletRequest request, String objectType, Long objectId, List<FactValuePair> factList);
+
+	public List<Facts> fetchByTaxonId(Long taxonId);
 
 }

@@ -101,4 +101,21 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 		return fact;
 	}
 
+	@SuppressWarnings("unchecked")
+	public List<Facts> findByTaxonId(Long taxonId) {
+		String qry = "from Facts f where f.pageTaxonId = :taxonId";
+		Session session = sessionFactory.openSession();
+		List<Facts> resultList = null;
+		try {
+			Query<Facts> query = session.createQuery(qry);
+			query.setParameter("taxonId", taxonId);
+			resultList = query.getResultList();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return resultList;
+	}
+
 }

@@ -5,19 +5,23 @@ package com.strandls.traits.controller;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import com.google.inject.Inject;
+import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.traits.ApiConstants;
 import com.strandls.traits.pojo.FactValuePair;
+import com.strandls.traits.pojo.Facts;
 import com.strandls.traits.pojo.TraitsValuePair;
 import com.strandls.traits.services.TraitsServices;
 
@@ -73,15 +77,16 @@ public class TraitsController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
+	@ValidateUser
 	@ApiOperation(value = "Create facts for a Object", notes = "Returns the Success and failure", response = FactValuePair.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Traits not found", response = String.class),
 			@ApiResponse(code = 206, message = "Patially created", response = String.class) })
 
-	public Response createFacts(@PathParam("objectType") String objectType, @PathParam("objectId") String objectId,
-			@ApiParam(name = "facts") List<FactValuePair> factValuePairs) {
+	public Response createFacts(@Context HttpServletRequest request, @PathParam("objectType") String objectType,
+			@PathParam("objectId") String objectId, @ApiParam(name = "facts") List<FactValuePair> factValuePairs) {
 		try {
 			Long objId = Long.parseLong(objectId);
-			List<FactValuePair> result = services.createFacts(objectType, objId, factValuePairs);
+			List<FactValuePair> result = services.createFacts(request, objectType, objId, factValuePairs);
 			if (result.isEmpty())
 				return Response.status(Status.CREATED).entity(null).build();
 			return Response.status(206).entity(result).build();
@@ -127,6 +132,25 @@ public class TraitsController {
 			return Response.status(Status.BAD_REQUEST).build();
 		}
 
+	}
+
+	@GET
+	@Path(ApiConstants.TAXON + "/{taxonId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find facts by taxonId", notes = "Returns list of facts for a particular TaxonId", response = Facts.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "traits not found for TaxonId", response = String.class) })
+
+	public Response getFactsBytaxonId(@PathParam("taxonId") String taxnId) {
+		try {
+			Long taxonId = Long.parseLong(taxnId);
+			List<Facts> result = services.fetchByTaxonId(taxonId);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
 	}
 
 }

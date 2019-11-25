@@ -9,7 +9,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.pac4j.core.profile.CommonProfile;
+
 import com.google.inject.Inject;
+import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.taxonomy.ApiException;
 import com.strandls.taxonomy.controllers.TaxonomyServicesApi;
 import com.strandls.traits.dao.FactsDAO;
@@ -93,15 +98,18 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	}
 
-//	contributor email and contributor user id in place of abhishek.rudra and 1426L
 	@Override
-	public List<FactValuePair> createFacts(String objectType, Long objectId, List<FactValuePair> factsList) {
+	public List<FactValuePair> createFacts(HttpServletRequest request, String objectType, Long objectId,
+			List<FactValuePair> factsList) {
 
+		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+		String userName = profile.getUsername();
+		Long userId = Long.parseLong(profile.getId());
 		List<FactValuePair> failedList = new ArrayList<FactValuePair>();
 		for (FactValuePair factValue : factsList) {
 			if (factValue.getNameId().equals(traistValueDao.findById(factValue.getValueId()).getTraitInstanceId())) {
-				Facts fact = new Facts(null, 0L, "abhishek.rudra", 1426L, false, 822L, objectId, null,
-						factValue.getNameId(), factValue.getValueId(), null, objectType, null, null, null, null);
+				Facts fact = new Facts(null, 0L, userName, userId, false, 822L, objectId, null, factValue.getNameId(),
+						factValue.getValueId(), null, objectType, null, null, null, null);
 				Facts result = factsDao.save(fact);
 				if (result == null)
 					failedList.add(factValue);
@@ -111,6 +119,12 @@ public class TraitsServicesImpl implements TraitsServices {
 
 		return failedList;
 
+	}
+
+	@Override
+	public List<Facts> fetchByTaxonId(Long taxonId) {
+		List<Facts> result = factsDao.findByTaxonId(taxonId);
+		return result;
 	}
 
 }
