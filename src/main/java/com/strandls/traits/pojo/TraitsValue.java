@@ -28,6 +28,7 @@ public class TraitsValue implements Serializable {
 	private String value;
 	private String icon;
 	private Long traitInstanceId;
+	private Boolean isDeleted;
 
 	@Id
 	@GeneratedValue
@@ -65,6 +66,15 @@ public class TraitsValue implements Serializable {
 
 	public void setTraitInstanceId(Long traitInstanceId) {
 		this.traitInstanceId = traitInstanceId;
+	}
+
+	@Column(name = "is_deleted")
+	public Boolean getIsDeleted() {
+		return isDeleted;
+	}
+
+	public void setIsDeleted(Boolean isDeleted) {
+		this.isDeleted = isDeleted;
 	}
 
 }

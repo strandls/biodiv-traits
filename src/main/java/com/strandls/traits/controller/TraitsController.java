@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -22,6 +23,7 @@ import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.traits.ApiConstants;
 import com.strandls.traits.pojo.FactValuePair;
 import com.strandls.traits.pojo.Facts;
+import com.strandls.traits.pojo.TraitsValue;
 import com.strandls.traits.pojo.TraitsValuePair;
 import com.strandls.traits.services.TraitsServices;
 
@@ -100,7 +102,7 @@ public class TraitsController {
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
-	@ApiOperation(value = "Find Traits by Traits ID for ibp", notes = "Returns the key value pair of Tarits", response = FactValuePair.class)
+	@ApiOperation(value = "Find Traits by Facts ID for ibp", notes = "Returns the key value pair of Tarits", response = FactValuePair.class)
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Traits not found", response = String.class) })
 
 	public Response getFactIbp(@PathParam("traitId") String traitId) {
@@ -150,6 +152,43 @@ public class TraitsController {
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.VALUE + "/{traitId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find the value of Traits", notes = "Returns the values of traits based on trait's ID", response = TraitsValue.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to get the values", response = String.class) })
+
+	public Response getTraitsValue(@PathParam("traitId") String traitId) {
+		try {
+			Long trait = Long.parseLong(traitId);
+			List<TraitsValue> result = services.fetchTraitsValue(trait);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@PUT
+	@Path(ApiConstants.UPDATE + "/{objectType}/{objectId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	public Response updateTraits(@Context HttpServletRequest request, @PathParam("objectType") String objectType,
+			@PathParam("objectId") String objectId, @PathParam("traitId") String traitId,
+			@ApiParam(name = "traitValueList") List<Long> traitValueList) {
+		try {
+			Long objId = Long.parseLong(objectId);
+			Long trait = Long.parseLong(traitId);
+
+			List<FactValuePair> result = services.updateTraits(request, objectType, objId, trait, traitValueList);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
 

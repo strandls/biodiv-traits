@@ -19,5 +19,7 @@ public class ApiConstants {
 	public static final String SPECIESID = "/speciesid";
 	public static final String CREATE = "/create";
 	public static final String TAXON = "/taxon";
+	public static final String VALUE = "/value";
+	public static final String UPDATE = "/update";
 
 }

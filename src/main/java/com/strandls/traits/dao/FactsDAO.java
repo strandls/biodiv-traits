@@ -118,4 +118,22 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 		return resultList;
 	}
 
+	@SuppressWarnings("unchecked")
+	public List<Facts> fetchByTraitId(String objectType, Long objectId, Long traitId) {
+		String qry = "from Facts where objectId = :id and objectType = :type and traitInstanceId = :traitId and isDeleted = false";
+		Session session = sessionFactory.openSession();
+		List<Facts> entity = null;
+		try {
+			Query<Facts> query = session.createQuery(qry);
+			query.setParameter("id", objectId);
+			query.setParameter("type", objectType);
+			query.setParameter("traitId", traitId);
+			entity = query.getResultList();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return entity;
+	}
 }

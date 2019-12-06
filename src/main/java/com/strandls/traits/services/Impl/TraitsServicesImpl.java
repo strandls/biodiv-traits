@@ -127,4 +127,38 @@ public class TraitsServicesImpl implements TraitsServices {
 		return result;
 	}
 
+	@Override
+	public List<TraitsValue> fetchTraitsValue(Long traitId) {
+		List<TraitsValue> result = traistValueDao.findTraitsValue(traitId);
+		return result;
+	}
+
+	@Override
+	public List<FactValuePair> updateTraits(HttpServletRequest request, String objectType, Long objectId, Long traitId,
+			List<Long> traitsValueList) {
+
+		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+		Long userId = Long.parseLong(profile.getId());
+		String userName = profile.getUsername();
+		List<Long> previousValueId = new ArrayList<Long>();
+
+		List<Facts> previousFacts = factsDao.fetchByTraitId(objectType, objectId, traitId);
+		for (Facts fact : previousFacts) {
+			if (!(traitsValueList.contains(fact.getTraitValueId()))) {
+				factsDao.delete(fact);
+			}
+			previousValueId.add(fact.getTraitValueId());
+		}
+		for (Long newValue : traitsValueList) {
+			if (!(previousValueId.contains(newValue))) {
+				Facts fact = new Facts(null, 0L, userName, userId, false, 822L, objectId, null, traitId, newValue, null,
+						objectType, null, null, null, null);
+				factsDao.save(fact);
+			}
+		}
+		List<FactValuePair> result = getFacts(objectType, objectId);
+
+		return result;
+	}
+
 }
