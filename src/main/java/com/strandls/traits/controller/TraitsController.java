@@ -174,7 +174,7 @@ public class TraitsController {
 	}
 
 	@PUT
-	@Path(ApiConstants.UPDATE + "/{objectType}/{objectId}")
+	@Path(ApiConstants.UPDATE + "/{objectType}/{objectId}/{traitId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
