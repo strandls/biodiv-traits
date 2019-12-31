@@ -178,6 +178,9 @@ public class TraitsController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
+	@ApiOperation(value = "Updates the Traits with Values", notes = "Returns the list of allTraitValue Pair", response = FactValuePair.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Unable to edit the Traits", response = String.class) })
+
 	public Response updateTraits(@Context HttpServletRequest request, @PathParam("objectType") String objectType,
 			@PathParam("objectId") String objectId, @PathParam("traitId") String traitId,
 			@ApiParam(name = "traitValueList") List<Long> traitValueList) {
