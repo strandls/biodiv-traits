@@ -4,18 +4,21 @@
 package com.strandls.traits.services.Impl;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.pac4j.core.profile.CommonProfile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.strandls.authentication_utility.util.AuthUtil;
-import com.strandls.taxonomy.ApiException;
 import com.strandls.taxonomy.controllers.TaxonomyServicesApi;
 import com.strandls.traits.dao.FactsDAO;
 import com.strandls.traits.dao.TraitTaxonomyDefinitionDao;
@@ -33,6 +36,8 @@ import com.strandls.traits.services.TraitsServices;
  *
  */
 public class TraitsServicesImpl implements TraitsServices {
+
+	private final Logger logger = LoggerFactory.getLogger(TraitsServicesImpl.class);
 
 	@Inject
 	private FactsDAO factsDao;
@@ -62,7 +67,7 @@ public class TraitsServicesImpl implements TraitsServices {
 	public List<TraitsValuePair> getTraitList(Long speciesId) {
 		List<TraitTaxonomyDefinition> taxonList = traitTaxonomyDef.findAllTraitList("8,9,10,11,12,13"); // trait id
 		List<Long> rootTrait = traitTaxonomyDef.findAllRootTrait();
-		Set<Long> traitSet = new HashSet<Long>();
+		Set<Long> traitSet = new TreeSet<Long>();
 		List<TraitsValuePair> traitValuePair = new ArrayList<TraitsValuePair>();
 		try {
 			if (speciesId == 829 || speciesId == 830) {
@@ -86,13 +91,26 @@ public class TraitsServicesImpl implements TraitsServices {
 			for (Long trait : rootTrait) {
 				traitSet.add(trait);
 			}
+
 			Map<Traits, List<TraitsValue>> traitValueMap = traitTaxonomyDef.findTraitValueList(traitSet);
 
-			for (Traits traits : traitValueMap.keySet()) {
+			TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(
+					new Comparator<Traits>() {
+
+						@Override
+						public int compare(Traits o1, Traits o2) {
+							if (o1.getId() < o2.getId())
+								return -1;
+							return 1;
+						}
+					});
+			sorted.putAll(traitValueMap);
+
+			for (Traits traits : sorted.keySet()) {
 				traitValuePair.add(new TraitsValuePair(traits, traitValueMap.get(traits)));
 			}
-		} catch (ApiException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
 		}
 		return traitValuePair;
 
