@@ -18,6 +18,7 @@ public class TraitsDAOModule extends AbstractModule {
 		bind(FactsDAO.class).in(Scopes.SINGLETON);
 		bind(TraitTaxonomyDefinitionDao.class).in(Scopes.SINGLETON);
 		bind(TraitsValueDao.class).in(Scopes.SINGLETON);
+		bind(TraitsDao.class).in(Scopes.SINGLETON);
 
 	}
 }

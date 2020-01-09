@@ -119,21 +119,4 @@ public class TraitTaxonomyDefinitionDao extends AbstractDAO<TraitTaxonomyDefinit
 		return traitValueMap;
 	}
 
-	@SuppressWarnings("unchecked")
-	public List<Long> findAllObservationTrait() {
-		String qry = "select t.id from Traits t where showInObservation = TRUE and isDeleted = FALSE";
-		Session session = sessionFactory.openSession();
-		List<Long> result = new ArrayList<Long>();
-		try {
-			Query<Long> query = session.createQuery(qry);
-			result = query.getResultList();
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-		} finally {
-			session.close();
-		}
-
-		return result;
-	}
-
 }

@@ -22,6 +22,7 @@ import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.taxonomy.controllers.TaxonomyServicesApi;
 import com.strandls.traits.dao.FactsDAO;
 import com.strandls.traits.dao.TraitTaxonomyDefinitionDao;
+import com.strandls.traits.dao.TraitsDao;
 import com.strandls.traits.dao.TraitsValueDao;
 import com.strandls.traits.pojo.FactValuePair;
 import com.strandls.traits.pojo.Facts;
@@ -41,6 +42,9 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	@Inject
 	private FactsDAO factsDao;
+
+	@Inject
+	private TraitsDao traitsDao;
 
 	@Inject
 	private TraitTaxonomyDefinitionDao traitTaxonomyDef;
@@ -71,7 +75,7 @@ public class TraitsServicesImpl implements TraitsServices {
 		List<TraitsValuePair> traitValuePair = new ArrayList<TraitsValuePair>();
 		try {
 			if (speciesId == 829 || speciesId == 830) {
-				traitSet.addAll(traitTaxonomyDef.findAllObservationTrait());
+				traitSet.addAll(traitsDao.findAllObservationTrait());
 			} else {
 				List<String> taxonomyList = new ArrayList<String>();
 				for (TraitTaxonomyDefinition ttd : taxonList) {
@@ -158,6 +162,14 @@ public class TraitsServicesImpl implements TraitsServices {
 		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 		Long userId = Long.parseLong(profile.getId());
 		String userName = profile.getUsername();
+
+		Traits trait = traitsDao.findById(traitId);
+		if (trait.getTraitTypes().equals("SINGLE_CATEGORICAL")) {
+			Long value = traitsValueList.get(0);
+			traitsValueList.clear();
+			traitsValueList.add(value);
+		}
+
 		List<Long> previousValueId = new ArrayList<Long>();
 
 		List<Facts> previousFacts = factsDao.fetchByTraitId(objectType, objectId, traitId);
