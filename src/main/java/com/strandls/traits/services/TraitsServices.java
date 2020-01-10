@@ -4,6 +4,7 @@
 package com.strandls.traits.services;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -25,7 +26,7 @@ public interface TraitsServices {
 	public List<TraitsValuePair> getTraitList(Long speciesId);
 
 	public List<FactValuePair> createFacts(HttpServletRequest request, String objectType, Long objectId,
-			List<FactValuePair> factList);
+			Map<Long, List<Long>> factList);
 
 	public List<Facts> fetchByTaxonId(Long taxonId);
 

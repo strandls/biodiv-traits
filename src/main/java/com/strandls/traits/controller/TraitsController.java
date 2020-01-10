@@ -4,6 +4,7 @@
 package com.strandls.traits.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -85,7 +86,8 @@ public class TraitsController {
 			@ApiResponse(code = 206, message = "Patially created", response = String.class) })
 
 	public Response createFacts(@Context HttpServletRequest request, @PathParam("objectType") String objectType,
-			@PathParam("objectId") String objectId, @ApiParam(name = "facts") List<FactValuePair> factValuePairs) {
+			@PathParam("objectId") String objectId,
+			@ApiParam(name = "factValuePairs") Map<Long, List<Long>> factValuePairs) {
 		try {
 			Long objId = Long.parseLong(objectId);
 			List<FactValuePair> result = services.createFacts(request, objectType, objId, factValuePairs);

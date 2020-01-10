@@ -122,21 +122,32 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	@Override
 	public List<FactValuePair> createFacts(HttpServletRequest request, String objectType, Long objectId,
-			List<FactValuePair> factsList) {
+			Map<Long, List<Long>> factsList) {
 
 		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 		String userName = profile.getUsername();
 		Long userId = Long.parseLong(profile.getId());
+		List<FactValuePair> validFactList = new ArrayList<FactValuePair>();
 		List<FactValuePair> failedList = new ArrayList<FactValuePair>();
-		for (FactValuePair factValue : factsList) {
-			if (factValue.getNameId().equals(traistValueDao.findById(factValue.getValueId()).getTraitInstanceId())) {
-				Facts fact = new Facts(null, 0L, userName, userId, false, 822L, objectId, null, factValue.getNameId(),
-						factValue.getValueId(), null, objectType, null, null, null, null);
-				Facts result = factsDao.save(fact);
-				if (result == null)
-					failedList.add(factValue);
-			} else
-				factsList.add(factValue);
+		for (Map.Entry<Long, List<Long>> entry : factsList.entrySet()) {
+			List<TraitsValue> traitsValue = traistValueDao.findTraitsValue(entry.getKey());
+			for (TraitsValue values : traitsValue) {
+				if (entry.getValue().contains(values.getId())) {
+					validFactList.add(
+							new FactValuePair(values.getTraitInstanceId(), null, values.getId(), null, null, null));
+				}
+			}
+
+		}
+
+		for (FactValuePair factValue : validFactList) {
+
+			Facts fact = new Facts(null, 0L, userName, userId, false, 822L, objectId, null, factValue.getNameId(),
+					factValue.getValueId(), null, objectType, null, null, null, null);
+			Facts result = factsDao.save(fact);
+			if (result == null)
+				failedList.add(factValue);
+
 		}
 
 		return failedList;
