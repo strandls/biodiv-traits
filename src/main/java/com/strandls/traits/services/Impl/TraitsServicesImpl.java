@@ -41,6 +41,9 @@ public class TraitsServicesImpl implements TraitsServices {
 	private final Logger logger = LoggerFactory.getLogger(TraitsServicesImpl.class);
 
 	@Inject
+	private LogActivities logActivity;
+
+	@Inject
 	private FactsDAO factsDao;
 
 	@Inject
@@ -145,8 +148,13 @@ public class TraitsServicesImpl implements TraitsServices {
 			Facts fact = new Facts(null, 0L, userName, userId, false, 822L, objectId, null, factValue.getNameId(),
 					factValue.getValueId(), null, objectType, null, null, null, null);
 			Facts result = factsDao.save(fact);
+
+			String trait = traitsDao.findById(fact.getTraitInstanceId()).getName();
+			String value = traistValueDao.findById(fact.getTraitValueId()).getValue();
+			String description = trait + ":" + value;
 			if (result == null)
 				failedList.add(factValue);
+			logActivity.LogActivity(description, objectId, objectId, "observation", result.getId(), "Added a fact");
 
 		}
 
@@ -181,6 +189,12 @@ public class TraitsServicesImpl implements TraitsServices {
 			traitsValueList.add(value);
 		}
 
+		List<TraitsValue> valueList = traistValueDao.findTraitsValue(traitId);
+		List<Long> validValueId = new ArrayList<Long>();
+		for (TraitsValue tv : valueList) {
+			validValueId.add(tv.getId());
+		}
+
 		List<Long> previousValueId = new ArrayList<Long>();
 
 		List<Facts> previousFacts = factsDao.fetchByTraitId(objectType, objectId, traitId);
@@ -191,10 +205,15 @@ public class TraitsServicesImpl implements TraitsServices {
 			previousValueId.add(fact.getTraitValueId());
 		}
 		for (Long newValue : traitsValueList) {
-			if (!(previousValueId.contains(newValue))) {
+			if (!(previousValueId.contains(newValue)) && validValueId.contains(newValue)) {
 				Facts fact = new Facts(null, 0L, userName, userId, false, 822L, objectId, null, traitId, newValue, null,
 						objectType, null, null, null, null);
-				factsDao.save(fact);
+				fact = factsDao.save(fact);
+				String traitName = trait.getName();
+				String value = traistValueDao.findById(fact.getTraitValueId()).getValue();
+				String description = traitName + ":" + value;
+				logActivity.LogActivity(description, objectId, objectId, "observation", fact.getId(), "Updated fact");
+
 			}
 		}
 		List<FactValuePair> result = getFacts(objectType, objectId);

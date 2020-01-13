@@ -15,6 +15,7 @@ public class TraitsServiceModule extends AbstractModule {
 
 	@Override
 	protected void configure() {
-	bind(TraitsServices.class).to(TraitsServicesImpl.class).in(Scopes.SINGLETON);
+		bind(TraitsServices.class).to(TraitsServicesImpl.class).in(Scopes.SINGLETON);
+		bind(LogActivities.class).in(Scopes.SINGLETON);
 	}
 }

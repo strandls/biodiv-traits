@@ -16,6 +16,7 @@ import javax.ws.rs.core.HttpHeaders;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.strandls.activity.controller.ActivitySerivceApi;
 import com.strandls.taxonomy.controllers.TaxonomyServicesApi;
 
 /**
@@ -27,6 +28,9 @@ public class SwaggerFilter implements Filter {
 
 	@Inject
 	public TaxonomyServicesApi taxonomyService;
+
+	@Inject
+	public ActivitySerivceApi activityService;
 
 	/**
 	 * 
@@ -54,6 +58,7 @@ public class SwaggerFilter implements Filter {
 		String header = request2.getHeader(HttpHeaders.AUTHORIZATION);
 
 		taxonomyService.getApiClient().addDefaultHeader(HttpHeaders.AUTHORIZATION, header);
+		activityService.getApiClient().addDefaultHeader(HttpHeaders.AUTHORIZATION, header);
 
 		chain.doFilter(request2, response);
 	}
