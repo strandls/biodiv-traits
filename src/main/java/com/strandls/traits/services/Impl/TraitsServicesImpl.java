@@ -204,6 +204,11 @@ public class TraitsServicesImpl implements TraitsServices {
 			}
 			previousValueId.add(fact.getTraitValueId());
 		}
+
+		String activityType = "Updated fact";
+		if (previousValueId.isEmpty())
+			activityType = "Added a fact";
+
 		for (Long newValue : traitsValueList) {
 			if (!(previousValueId.contains(newValue)) && validValueId.contains(newValue)) {
 				Facts fact = new Facts(null, 0L, userName, userId, false, 822L, objectId, null, traitId, newValue, null,
@@ -212,7 +217,7 @@ public class TraitsServicesImpl implements TraitsServices {
 				String traitName = trait.getName();
 				String value = traistValueDao.findById(fact.getTraitValueId()).getValue();
 				String description = traitName + ":" + value;
-				logActivity.LogActivity(description, objectId, objectId, "observation", fact.getId(), "Updated fact");
+				logActivity.LogActivity(description, objectId, objectId, "observation", fact.getId(), activityType);
 
 			}
 		}
