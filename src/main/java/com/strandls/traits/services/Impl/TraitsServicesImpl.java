@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.strandls.authentication_utility.util.AuthUtil;
+import com.strandls.observation.controller.ObservationServiceApi;
 import com.strandls.taxonomy.controllers.TaxonomyServicesApi;
 import com.strandls.traits.dao.FactsDAO;
 import com.strandls.traits.dao.TraitTaxonomyDefinitionDao;
@@ -31,6 +32,9 @@ import com.strandls.traits.pojo.Traits;
 import com.strandls.traits.pojo.TraitsValue;
 import com.strandls.traits.pojo.TraitsValuePair;
 import com.strandls.traits.services.TraitsServices;
+import com.strandls.traits.util.TraitsException;
+
+import net.minidev.json.JSONArray;
 
 /**
  * @author Abhishek Rudra
@@ -54,6 +58,9 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	@Inject
 	private TaxonomyServicesApi taxonomyService;
+
+	@Inject
+	private ObservationServiceApi observationService;
 
 	@Inject
 	private TraitsValueDao traistValueDao;
@@ -178,52 +185,65 @@ public class TraitsServicesImpl implements TraitsServices {
 	public List<FactValuePair> updateTraits(HttpServletRequest request, String objectType, Long objectId, Long traitId,
 			List<Long> traitsValueList) {
 
-		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-		Long userId = Long.parseLong(profile.getId());
-		String userName = profile.getUsername();
+		try {
 
-		Traits trait = traitsDao.findById(traitId);
-		if (trait.getTraitTypes().equals("SINGLE_CATEGORICAL")) {
-			Long value = traitsValueList.get(0);
-			traitsValueList.clear();
-			traitsValueList.add(value);
-		}
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray userRole = (JSONArray) profile.getAttribute("roles");
+			Long userId = Long.parseLong(profile.getId());
+			String userName = profile.getUsername();
 
-		List<TraitsValue> valueList = traistValueDao.findTraitsValue(traitId);
-		List<Long> validValueId = new ArrayList<Long>();
-		for (TraitsValue tv : valueList) {
-			validValueId.add(tv.getId());
-		}
-
-		List<Long> previousValueId = new ArrayList<Long>();
-
-		List<Facts> previousFacts = factsDao.fetchByTraitId(objectType, objectId, traitId);
-		for (Facts fact : previousFacts) {
-			if (!(traitsValueList.contains(fact.getTraitValueId()))) {
-				factsDao.delete(fact);
+			Traits trait = traitsDao.findById(traitId);
+			if (trait.getTraitTypes().equals("SINGLE_CATEGORICAL")) {
+				Long value = traitsValueList.get(0);
+				traitsValueList.clear();
+				traitsValueList.add(value);
 			}
-			previousValueId.add(fact.getTraitValueId());
-		}
-
-		String activityType = "Updated fact";
-		if (previousValueId.isEmpty())
-			activityType = "Added a fact";
-
-		for (Long newValue : traitsValueList) {
-			if (!(previousValueId.contains(newValue)) && validValueId.contains(newValue)) {
-				Facts fact = new Facts(null, 0L, userName, userId, false, 822L, objectId, null, traitId, newValue, null,
-						objectType, null, null, null, null);
-				fact = factsDao.save(fact);
-				String traitName = trait.getName();
-				String value = traistValueDao.findById(fact.getTraitValueId()).getValue();
-				String description = traitName + ":" + value;
-				logActivity.LogActivity(description, objectId, objectId, "observation", fact.getId(), activityType);
-
+			if (trait.getIsParticipatory() == false) {
+				Long authorId = observationService.getObservationAuthor(objectId.toString());
+				if (!(userRole.contains("ROLE_ADMIN")) || authorId != userId) {
+					throw new TraitsException("User not allowed to add this traits");
+				}
 			}
-		}
-		List<FactValuePair> result = getFacts(objectType, objectId);
 
-		return result;
+			List<TraitsValue> valueList = traistValueDao.findTraitsValue(traitId);
+			List<Long> validValueId = new ArrayList<Long>();
+			for (TraitsValue tv : valueList) {
+				validValueId.add(tv.getId());
+			}
+
+			List<Long> previousValueId = new ArrayList<Long>();
+
+			List<Facts> previousFacts = factsDao.fetchByTraitId(objectType, objectId, traitId);
+			for (Facts fact : previousFacts) {
+				if (!(traitsValueList.contains(fact.getTraitValueId()))) {
+					factsDao.delete(fact);
+				}
+				previousValueId.add(fact.getTraitValueId());
+			}
+
+			String activityType = "Updated fact";
+			if (previousValueId.isEmpty())
+				activityType = "Added a fact";
+
+			for (Long newValue : traitsValueList) {
+				if (!(previousValueId.contains(newValue)) && validValueId.contains(newValue)) {
+					Facts fact = new Facts(null, 0L, userName, userId, false, 822L, objectId, null, traitId, newValue,
+							null, objectType, null, null, null, null);
+					fact = factsDao.save(fact);
+					String traitName = trait.getName();
+					String value = traistValueDao.findById(fact.getTraitValueId()).getValue();
+					String description = traitName + ":" + value;
+					logActivity.LogActivity(description, objectId, objectId, "observation", fact.getId(), activityType);
+
+				}
+			}
+			List<FactValuePair> result = getFacts(objectType, objectId);
+
+			return result;
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
 	}
 
 }
