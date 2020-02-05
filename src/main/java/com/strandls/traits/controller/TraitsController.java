@@ -14,6 +14,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -154,6 +155,22 @@ public class TraitsController {
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.TAXON)
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find all facts based of comma separated value ids", notes = "Returns a List of Taxon Id", response = Long.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "Unable to retrive the data", response = String.class) })
+	public Response getTaxonListByValueId(@QueryParam("valueList") String values) {
+		try {
+			List<Long> result = services.fetchTaxonIdByValueId(values);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
 

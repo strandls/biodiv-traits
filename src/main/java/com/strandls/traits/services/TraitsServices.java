@@ -30,6 +30,8 @@ public interface TraitsServices {
 
 	public List<Facts> fetchByTaxonId(Long taxonId);
 
+	public List<Long> fetchTaxonIdByValueId(String valueList);
+
 	public List<TraitsValue> fetchTraitsValue(Long traitId);
 
 	public List<FactValuePair> updateTraits(HttpServletRequest request, String objectType, Long objectId, Long traitId,

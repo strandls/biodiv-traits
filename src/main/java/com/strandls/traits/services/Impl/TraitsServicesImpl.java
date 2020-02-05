@@ -246,4 +246,13 @@ public class TraitsServicesImpl implements TraitsServices {
 		return null;
 	}
 
+	@Override
+	public List<Long> fetchTaxonIdByValueId(String valueList) {
+		List<Facts> factsResult = factsDao.fetchByValueList(valueList);
+		List<Long> taxonList = new ArrayList<Long>();
+		for (Facts fact : factsResult)
+			taxonList.add(fact.getPageTaxonId());
+		return taxonList;
+	}
+
 }
