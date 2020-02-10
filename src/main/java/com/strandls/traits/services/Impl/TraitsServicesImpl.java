@@ -199,7 +199,7 @@ public class TraitsServicesImpl implements TraitsServices {
 				traitsValueList.add(value);
 			}
 			if (trait.getIsParticipatory() == false) {
-				Long authorId = observationService.getObservationAuthor(objectId.toString());
+				Long authorId = Long.parseLong(observationService.getObservationAuthor(objectId.toString()));
 				if (!(userRole.contains("ROLE_ADMIN")) || authorId != userId) {
 					throw new TraitsException("User not allowed to add this traits");
 				}
