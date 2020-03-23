@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.strandls.authentication_utility.util.AuthUtil;
-import com.strandls.observation.controller.ObservationServiceApi;
 import com.strandls.taxonomy.controllers.TaxonomyServicesApi;
 import com.strandls.traits.dao.FactsDAO;
 import com.strandls.traits.dao.TraitTaxonomyDefinitionDao;
@@ -58,9 +57,6 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	@Inject
 	private TaxonomyServicesApi taxonomyService;
-
-	@Inject
-	private ObservationServiceApi observationService;
 
 	@Inject
 	private TraitsValueDao traistValueDao;
@@ -199,7 +195,7 @@ public class TraitsServicesImpl implements TraitsServices {
 				traitsValueList.add(value);
 			}
 			if (trait.getIsParticipatory() == false) {
-				Long authorId = Long.parseLong(observationService.getObservationAuthor(objectId.toString()));
+				Long authorId = factsDao.getObservationAuthor(objectId.toString());
 				if (!(userRole.contains("ROLE_ADMIN") || authorId != userId)) {
 					throw new TraitsException("User not allowed to add this traits");
 				}

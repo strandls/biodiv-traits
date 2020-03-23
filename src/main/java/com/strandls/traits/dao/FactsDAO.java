@@ -154,4 +154,22 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 		}
 		return result;
 	}
+
+	@SuppressWarnings("unchecked")
+	public Long getObservationAuthor(String observationId) {
+		String qry = "SELECT author_id from observation where id =" + observationId;
+		Session session = sessionFactory.openSession();
+		try {
+			Query<Object> query = session.createNativeQuery(qry);
+			Object resultObject = query.getSingleResult();
+			Long authorId = Long.parseLong(resultObject.toString());
+			return authorId;
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return null;
+	}
+
 }
