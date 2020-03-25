@@ -26,6 +26,8 @@ import com.strandls.traits.dao.TraitsDao;
 import com.strandls.traits.dao.TraitsValueDao;
 import com.strandls.traits.pojo.FactValuePair;
 import com.strandls.traits.pojo.Facts;
+import com.strandls.traits.pojo.FactsCreateData;
+import com.strandls.traits.pojo.FactsUpdateData;
 import com.strandls.traits.pojo.TraitTaxonomyDefinition;
 import com.strandls.traits.pojo.Traits;
 import com.strandls.traits.pojo.TraitsValue;
@@ -128,14 +130,14 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	@Override
 	public List<FactValuePair> createFacts(HttpServletRequest request, String objectType, Long objectId,
-			Map<Long, List<Long>> factsList) {
+			FactsCreateData factsCreateData) {
 
 		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 		String userName = profile.getUsername();
 		Long userId = Long.parseLong(profile.getId());
 		List<FactValuePair> validFactList = new ArrayList<FactValuePair>();
 		List<FactValuePair> failedList = new ArrayList<FactValuePair>();
-		for (Map.Entry<Long, List<Long>> entry : factsList.entrySet()) {
+		for (Map.Entry<Long, List<Long>> entry : factsCreateData.getFactValuePairs().entrySet()) {
 			List<TraitsValue> traitsValue = traistValueDao.findTraitsValue(entry.getKey());
 			for (TraitsValue values : traitsValue) {
 				if (entry.getValue().contains(values.getId())) {
@@ -157,7 +159,7 @@ public class TraitsServicesImpl implements TraitsServices {
 			String description = trait + ":" + value;
 			if (result == null)
 				failedList.add(factValue);
-			logActivity.LogActivity(description, objectId, objectId, "observation", result.getId(), "Added a fact");
+			logActivity.LogActivity(description, objectId, objectId, "observation", result.getId(), "Added a fact",factsCreateData.getMailData());
 
 		}
 
@@ -179,10 +181,10 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	@Override
 	public List<FactValuePair> updateTraits(HttpServletRequest request, String objectType, Long objectId, Long traitId,
-			List<Long> traitsValueList) {
+			FactsUpdateData factsUpdateData) {
 
 		try {
-
+			List<Long> traitsValueList = factsUpdateData.getTraitValueList();
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			JSONArray userRole = (JSONArray) profile.getAttribute("roles");
 			Long userId = Long.parseLong(profile.getId());
@@ -229,7 +231,7 @@ public class TraitsServicesImpl implements TraitsServices {
 					String traitName = trait.getName();
 					String value = traistValueDao.findById(fact.getTraitValueId()).getValue();
 					String description = traitName + ":" + value;
-					logActivity.LogActivity(description, objectId, objectId, "observation", fact.getId(), activityType);
+					logActivity.LogActivity(description, objectId, objectId, "observation", fact.getId(), activityType,factsUpdateData.getMailData());
 
 				}
 			}

@@ -4,7 +4,6 @@
 package com.strandls.traits.controller;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -25,6 +24,8 @@ import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.traits.ApiConstants;
 import com.strandls.traits.pojo.FactValuePair;
 import com.strandls.traits.pojo.Facts;
+import com.strandls.traits.pojo.FactsCreateData;
+import com.strandls.traits.pojo.FactsUpdateData;
 import com.strandls.traits.pojo.TraitsValue;
 import com.strandls.traits.pojo.TraitsValuePair;
 import com.strandls.traits.services.TraitsServices;
@@ -88,10 +89,10 @@ public class TraitsController {
 
 	public Response createFacts(@Context HttpServletRequest request, @PathParam("objectType") String objectType,
 			@PathParam("objectId") String objectId,
-			@ApiParam(name = "factValuePairs") Map<Long, List<Long>> factValuePairs) {
+			@ApiParam(name = "factsCreateData") FactsCreateData factsCreateData) {
 		try {
 			Long objId = Long.parseLong(objectId);
-			List<FactValuePair> result = services.createFacts(request, objectType, objId, factValuePairs);
+			List<FactValuePair> result = services.createFacts(request, objectType, objId, factsCreateData);
 			if (result.isEmpty())
 				return Response.status(Status.CREATED).entity(null).build();
 			return Response.status(206).entity(result).build();
@@ -202,12 +203,12 @@ public class TraitsController {
 
 	public Response updateTraits(@Context HttpServletRequest request, @PathParam("objectType") String objectType,
 			@PathParam("objectId") String objectId, @PathParam("traitId") String traitId,
-			@ApiParam(name = "traitValueList") List<Long> traitValueList) {
+			@ApiParam(name = "factsUpdateData") FactsUpdateData factsUpdateData) {
 		try {
 			Long objId = Long.parseLong(objectId);
 			Long trait = Long.parseLong(traitId);
 
-			List<FactValuePair> result = services.updateTraits(request, objectType, objId, trait, traitValueList);
+			List<FactValuePair> result = services.updateTraits(request, objectType, objId, trait, factsUpdateData);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
