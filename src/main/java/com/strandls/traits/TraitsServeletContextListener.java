@@ -25,6 +25,8 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Scopes;
 import com.google.inject.servlet.GuiceServletContextListener;
+import com.strandls.activity.controller.ActivitySerivceApi;
+import com.strandls.authentication_utility.filter.FilterModule;
 import com.strandls.taxonomy.controllers.TaxonomyServicesApi;
 import com.strandls.traits.controller.TraitsControllerModule;
 import com.strandls.traits.dao.TraitsDAOModule;
@@ -67,10 +69,13 @@ public class TraitsServeletContextListener extends GuiceServletContextListener {
 
 				bind(SessionFactory.class).toInstance(sessionFactory);
 				bind(TaxonomyServicesApi.class).in(Scopes.SINGLETON);
+				bind(ActivitySerivceApi.class).in(Scopes.SINGLETON);
 
 				serve("/api/*").with(GuiceContainer.class, props);
+
+				filter("/*").through(SwaggerFilter.class);
 			}
-		}, new TraitsControllerModule(), new TraitsServiceModule(), new TraitsDAOModule());
+		}, new TraitsControllerModule(), new FilterModule(), new TraitsServiceModule(), new TraitsDAOModule());
 
 		return injector;
 

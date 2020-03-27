@@ -49,7 +49,7 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 
 	@SuppressWarnings("unchecked")
 	public FactValuePair getTraitvaluePairIbp(Long factId) {
-		String qry = "select t.id, t.name , v.id, v.value from Facts f "
+		String qry = "select t.id, t.name , v.id, v.value , t.traitTypes, t.isParticipatory from Facts f "
 				+ "left join Traits t on f.traitInstanceId = t.id "
 				+ "left join TraitsValue v on f.traitValueId = v.id " + "where f.id = :id";
 		Session session = sessionFactory.openSession();
@@ -60,7 +60,8 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 
 			Object[] result = query.getSingleResult();
 			fact = new FactValuePair(Long.parseLong(result[0].toString()), result[1].toString(),
-					Long.parseLong(result[2].toString()), result[3].toString());
+					Long.parseLong(result[2].toString()), result[3].toString(), result[4].toString(),
+					Boolean.parseBoolean(result[5].toString()));
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		} finally {
@@ -73,7 +74,7 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 	@SuppressWarnings("unchecked")
 	public List<FactValuePair> getTraitValuePair(String objectType, Long objectId) {
 
-		String qry = "select t.id, t.name , v.id, v.value from Facts f "
+		String qry = "select t.id, t.name , v.id, v.value, t.traitTypes, t.isParticipatory from Facts f "
 				+ "left join Traits t on f.traitInstanceId = t.id "
 				+ "left join TraitsValue v on f.traitValueId = v.id "
 				+ "where f.objectId = :id and f.objectType = :type";
@@ -90,7 +91,8 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 			fact = new ArrayList<FactValuePair>();
 			for (Object[] result : resultList) {
 				FactValuePair fvp = new FactValuePair(Long.parseLong(result[0].toString()), result[1].toString(),
-						Long.parseLong(result[2].toString()), result[3].toString());
+						Long.parseLong(result[2].toString()), result[3].toString(), result[4].toString(),
+						Boolean.parseBoolean(result[5].toString()));
 				fact.add(fvp);
 			}
 		} catch (Exception e) {
@@ -99,6 +101,75 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 			session.close();
 		}
 		return fact;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Facts> findByTaxonId(Long taxonId) {
+		String qry = "from Facts f where f.pageTaxonId = :taxonId";
+		Session session = sessionFactory.openSession();
+		List<Facts> resultList = null;
+		try {
+			Query<Facts> query = session.createQuery(qry);
+			query.setParameter("taxonId", taxonId);
+			resultList = query.getResultList();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return resultList;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Facts> fetchByTraitId(String objectType, Long objectId, Long traitId) {
+		String qry = "from Facts where objectId = :id and objectType = :type and traitInstanceId = :traitId and isDeleted = false";
+		Session session = sessionFactory.openSession();
+		List<Facts> entity = null;
+		try {
+			Query<Facts> query = session.createQuery(qry);
+			query.setParameter("id", objectId);
+			query.setParameter("type", objectType);
+			query.setParameter("traitId", traitId);
+			entity = query.getResultList();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return entity;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Facts> fetchByValueList(String valueList) {
+		String qry = "from Facts where traitValueId in (" + valueList + ")";
+		Session session = sessionFactory.openSession();
+		List<Facts> result = null;
+		try {
+			Query<Facts> query = session.createQuery(qry);
+			result = query.getResultList();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	public Long getObservationAuthor(String observationId) {
+		String qry = "SELECT author_id from observation where id =" + observationId;
+		Session session = sessionFactory.openSession();
+		try {
+			Query<Object> query = session.createNativeQuery(qry);
+			Object resultObject = query.getSingleResult();
+			Long authorId = Long.parseLong(resultObject.toString());
+			return authorId;
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return null;
 	}
 
 }

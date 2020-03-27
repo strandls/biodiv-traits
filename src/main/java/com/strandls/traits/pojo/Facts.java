@@ -44,6 +44,13 @@ public class Facts implements Serializable {
 	private Long dataTableId;
 
 	/**
+	 * 
+	 */
+	public Facts() {
+		super();
+	}
+
+	/**
 	 * @param id
 	 * @param version
 	 * @param attribution
