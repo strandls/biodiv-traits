@@ -159,7 +159,8 @@ public class TraitsServicesImpl implements TraitsServices {
 			String description = trait + ":" + value;
 			if (result == null)
 				failedList.add(factValue);
-			logActivity.LogActivity(description, objectId, objectId, "observation", result.getId(), "Added a fact",factsCreateData.getMailData());
+			logActivity.LogActivity(request, description, objectId, objectId, "observation", result.getId(),
+					"Added a fact", factsCreateData.getMailData());
 
 		}
 
@@ -231,7 +232,8 @@ public class TraitsServicesImpl implements TraitsServices {
 					String traitName = trait.getName();
 					String value = traistValueDao.findById(fact.getTraitValueId()).getValue();
 					String description = traitName + ":" + value;
-					logActivity.LogActivity(description, objectId, objectId, "observation", fact.getId(), activityType,factsUpdateData.getMailData());
+					logActivity.LogActivity(request, description, objectId, objectId, "observation", fact.getId(),
+							activityType, factsUpdateData.getMailData());
 
 				}
 			}
