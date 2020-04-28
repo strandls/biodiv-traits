@@ -3,6 +3,8 @@
  */
 package com.strandls.traits.services.Impl;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +12,7 @@ import com.google.inject.Inject;
 import com.strandls.activity.controller.ActivitySerivceApi;
 import com.strandls.activity.pojo.ActivityLoggingData;
 import com.strandls.activity.pojo.MailData;
+import com.strandls.traits.Headers;
 
 /**
  * @author Abhishek Rudra
@@ -22,8 +25,11 @@ public class LogActivities {
 	@Inject
 	private ActivitySerivceApi activityService;
 
-	public void LogActivity(String activityDescription, Long rootObjectId, Long subRootObjectId, String rootObjectType,
-			Long activityId, String activityType,MailData mailData) {
+	@Inject
+	private Headers headers;
+
+	public void LogActivity(HttpServletRequest request, String activityDescription, Long rootObjectId,
+			Long subRootObjectId, String rootObjectType, Long activityId, String activityType, MailData mailData) {
 
 		try {
 			ActivityLoggingData activityLogging = new ActivityLoggingData();
@@ -35,6 +41,7 @@ public class LogActivities {
 			activityLogging.setSubRootObjectId(subRootObjectId);
 			activityLogging.setMailData(mailData);
 
+			activityService = headers.addActivityHeader(activityService, request);
 			activityService.logActivity(activityLogging);
 
 		} catch (Exception e) {
