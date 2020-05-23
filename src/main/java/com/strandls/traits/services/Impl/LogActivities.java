@@ -8,7 +8,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
+import javax.inject.Inject;
+
 import com.strandls.activity.controller.ActivitySerivceApi;
 import com.strandls.activity.pojo.ActivityLoggingData;
 import com.strandls.activity.pojo.MailData;

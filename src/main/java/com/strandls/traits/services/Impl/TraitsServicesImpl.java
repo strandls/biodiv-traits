@@ -17,7 +17,8 @@ import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
+import javax.inject.Inject;
+
 import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.taxonomy.controllers.TaxonomyServicesApi;
 import com.strandls.traits.dao.FactsDAO;

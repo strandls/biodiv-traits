@@ -19,7 +19,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import com.google.inject.Inject;
+import javax.inject.Inject;
+
 import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.traits.ApiConstants;
 import com.strandls.traits.pojo.FactValuePair;
