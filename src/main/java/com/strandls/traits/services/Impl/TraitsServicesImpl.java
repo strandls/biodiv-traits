@@ -11,13 +11,14 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.HttpHeaders;
 
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
 import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.taxonomy.controllers.TaxonomyServicesApi;
 import com.strandls.traits.dao.FactsDAO;
@@ -159,8 +160,8 @@ public class TraitsServicesImpl implements TraitsServices {
 			String description = trait + ":" + value;
 			if (result == null)
 				failedList.add(factValue);
-			logActivity.LogActivity(request, description, objectId, objectId, "observation", result.getId(),
-					"Added a fact", factsCreateData.getMailData());
+			logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId, objectId,
+					"observation", result.getId(), "Added a fact", factsCreateData.getMailData());
 
 		}
 
@@ -232,8 +233,8 @@ public class TraitsServicesImpl implements TraitsServices {
 					String traitName = trait.getName();
 					String value = traistValueDao.findById(fact.getTraitValueId()).getValue();
 					String description = traitName + ":" + value;
-					logActivity.LogActivity(request, description, objectId, objectId, "observation", fact.getId(),
-							activityType, factsUpdateData.getMailData());
+					logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId,
+							objectId, "observation", fact.getId(), activityType, factsUpdateData.getMailData());
 
 				}
 			}

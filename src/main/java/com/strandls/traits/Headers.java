@@ -3,7 +3,6 @@
  */
 package com.strandls.traits;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 
 import com.strandls.activity.controller.ActivitySerivceApi;
@@ -14,9 +13,8 @@ import com.strandls.activity.controller.ActivitySerivceApi;
  */
 public class Headers {
 
-	public ActivitySerivceApi addActivityHeader(ActivitySerivceApi activityService, HttpServletRequest request) {
-		String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-		activityService.getApiClient().addDefaultHeader(HttpHeaders.AUTHORIZATION, authHeader);
+	public ActivitySerivceApi addActivityHeader(ActivitySerivceApi activityService, String token) {
+		activityService.getApiClient().addDefaultHeader(HttpHeaders.AUTHORIZATION, token);
 		return activityService;
 	}
 
