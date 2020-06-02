@@ -5,7 +5,7 @@
 
 	<groupId>com.strandls.traits</groupId>
 	<artifactId>traits-api</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>war</packaging>
 	<name>biodiv-traits-api</name>
 	<url>https://github.com/strandls/biodiv-traits</url>
@@ -185,19 +185,19 @@
 		<dependency>
 		    <groupId>com.strandls.biodiv</groupId>
 		    <artifactId>authentication-utility</artifactId>
-		    <version>1.0.0-SNAPSHOT</version>
+		    <version>1.0.0</version>
 		</dependency>	
 		
 		<dependency>
 		    <groupId>com.strandls.biodiv</groupId>
 		    <artifactId>taxonomy-client</artifactId>
-		    <version>1.0.0-SNAPSHOT</version>
+		    <version>1.0.0</version>
 		</dependency>
 		
 		<dependency>
 		    <groupId>com.strandls.biodiv</groupId>
 		    <artifactId>activity-client</artifactId>
-		    <version>1.0.0-SNAPSHOT</version>
+		    <version>1.0.0</version>
 		</dependency>
 
 	</dependencies>
