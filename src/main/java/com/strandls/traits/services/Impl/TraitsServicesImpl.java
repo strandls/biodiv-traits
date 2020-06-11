@@ -78,7 +78,8 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	@Override
 	public List<TraitsValuePair> getTraitList(Long speciesId) {
-		List<TraitTaxonomyDefinition> taxonList = traitTaxonomyDef.findAllTraitList("8,9,10,11,12,13"); // trait id
+		List<Long> observationTrait = traitsDao.findAllObservationTrait();
+		List<TraitTaxonomyDefinition> taxonList = traitTaxonomyDef.findAllTraitList(observationTrait); // trait id
 		List<Long> rootTrait = traitTaxonomyDef.findAllRootTrait();
 		Set<Long> traitSet = new TreeSet<Long>();
 		List<TraitsValuePair> traitValuePair = new ArrayList<TraitsValuePair>();
