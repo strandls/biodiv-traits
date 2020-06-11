@@ -49,7 +49,7 @@ public class TraitsDao extends AbstractDAO<Traits, Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Long> findAllObservationTrait() {
-		String qry = "select t.id from Traits t where showInObservation = TRUE and isDeleted = FALSE";
+		String qry = "select t.id from Traits t where source = 'IBP' and showInObservation = TRUE and isDeleted = FALSE";
 		Session session = sessionFactory.openSession();
 		List<Long> result = new ArrayList<Long>();
 		try {

@@ -53,12 +53,13 @@ public class TraitTaxonomyDefinitionDao extends AbstractDAO<TraitTaxonomyDefinit
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<TraitTaxonomyDefinition> findAllTraitList(String traitList) {
-		String qry = "from TraitTaxonomyDefinition where traitTaxonId in (" + traitList + ")";
+	public List<TraitTaxonomyDefinition> findAllTraitList(List<Long> traitList) {
+		String qry = "from TraitTaxonomyDefinition where traitTaxonId in :traitList";
 		List<TraitTaxonomyDefinition> result = new ArrayList<TraitTaxonomyDefinition>();
 		Session session = sessionFactory.openSession();
 		try {
 			Query<TraitTaxonomyDefinition> query = session.createQuery(qry);
+			query.setParameter("traitList", traitList);
 			result = query.getResultList();
 		} catch (Exception e) {
 			logger.error(e.getMessage());
