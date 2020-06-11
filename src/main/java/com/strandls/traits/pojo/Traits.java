@@ -29,6 +29,7 @@ public class Traits implements Serializable {
 	private Boolean showInObservation;
 	private Boolean isParticipatory;
 	private Boolean isDeleted;
+	private String source;
 
 	@Id
 	@GeneratedValue
@@ -85,5 +86,15 @@ public class Traits implements Serializable {
 	public void setIsDeleted(Boolean isDeleted) {
 		this.isDeleted = isDeleted;
 	}
+	
+	@Column(name = "source")
+	public String getSource() {
+		return source;
+	}
 
+	public void setSource(String source) {
+		this.source = source;
+	}
+
+	
 }
