@@ -57,6 +57,23 @@ public class TraitsController {
 	}
 
 	@GET
+	@Path(ApiConstants.TRAIT + ApiConstants.ALL)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Fetch all the Traits", notes = "Returns all the IBP traits", response = TraitsValuePair.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to fetch all the traits", response = String.class) })
+
+	public Response getAllTraits() {
+		try {
+			List<TraitsValuePair> result = services.getAllTraits();
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
 	@Path("/{objectType}/{objectId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)

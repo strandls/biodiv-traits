@@ -5,6 +5,7 @@ package com.strandls.traits.services.Impl;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -77,6 +78,33 @@ public class TraitsServicesImpl implements TraitsServices {
 	}
 
 	@Override
+	public List<TraitsValuePair> getAllTraits() {
+
+		List<TraitsValuePair> traitValuePair = new ArrayList<TraitsValuePair>();
+		List<Long> allTraits = traitsDao.findAllObservationTrait();
+		Set<Long> traitSet = new HashSet<Long>();
+		traitSet.addAll(allTraits);
+		Map<Traits, List<TraitsValue>> traitValueMap = traitTaxonomyDef.findTraitValueList(traitSet);
+
+		TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(new Comparator<Traits>() {
+
+			@Override
+			public int compare(Traits o1, Traits o2) {
+				if (o1.getId() < o2.getId())
+					return -1;
+				return 1;
+			}
+		});
+		sorted.putAll(traitValueMap);
+
+		for (Traits traits : sorted.keySet()) {
+			traitValuePair.add(new TraitsValuePair(traits, traitValueMap.get(traits)));
+		}
+
+		return traitValuePair;
+	}
+
+	@Override
 	public List<TraitsValuePair> getTraitList(Long speciesId) {
 		List<Long> observationTrait = traitsDao.findAllObservationTrait();
 		List<TraitTaxonomyDefinition> taxonList = traitTaxonomyDef.findAllTraitList(observationTrait); // trait id
@@ -84,7 +112,7 @@ public class TraitsServicesImpl implements TraitsServices {
 		Set<Long> traitSet = new TreeSet<Long>();
 		List<TraitsValuePair> traitValuePair = new ArrayList<TraitsValuePair>();
 		try {
-			if (speciesId == 829 || speciesId == 830) {
+			if (speciesId == 829) {
 				traitSet.addAll(traitsDao.findAllObservationTrait());
 			} else {
 				List<String> taxonomyList = new ArrayList<String>();
