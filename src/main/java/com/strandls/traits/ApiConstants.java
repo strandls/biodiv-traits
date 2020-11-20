@@ -23,5 +23,6 @@ public class ApiConstants {
 	public static final String UPDATE = "/update";
 	public static final String TRAIT = "/trait";
 	public static final String ALL = "/all";
+	public static final String SPECIES = "/species";
 
 }

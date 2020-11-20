@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.taxonomy.controllers.TaxonomyServicesApi;
+import com.strandls.taxonomy.pojo.BreadCrumb;
 import com.strandls.traits.dao.FactsDAO;
 import com.strandls.traits.dao.TraitTaxonomyDefinitionDao;
 import com.strandls.traits.dao.TraitsDao;
@@ -63,7 +64,7 @@ public class TraitsServicesImpl implements TraitsServices {
 	private TaxonomyServicesApi taxonomyService;
 
 	@Inject
-	private TraitsValueDao traistValueDao;
+	private TraitsValueDao traitsValueDao;
 
 	@Override
 	public List<FactValuePair> getFacts(String objectType, Long objectId) {
@@ -78,13 +79,13 @@ public class TraitsServicesImpl implements TraitsServices {
 	}
 
 	@Override
-	public List<TraitsValuePair> getAllTraits() {
+	public List<TraitsValuePair> getAllObservationTraits() {
 
 		List<TraitsValuePair> traitValuePair = new ArrayList<TraitsValuePair>();
 		List<Long> allTraits = traitsDao.findAllObservationTrait();
 		Set<Long> traitSet = new HashSet<Long>();
 		traitSet.addAll(allTraits);
-		Map<Traits, List<TraitsValue>> traitValueMap = traitTaxonomyDef.findTraitValueList(traitSet);
+		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, true);
 
 		TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(new Comparator<Traits>() {
 
@@ -105,21 +106,77 @@ public class TraitsServicesImpl implements TraitsServices {
 	}
 
 	@Override
-	public List<TraitsValuePair> getTraitList(Long speciesId) {
+	public List<TraitsValuePair> getSpeciesTraits(Long taxonId) {
+//		List<Long> speciesTraits = traitsDao.findAllSpeciesTraits();
+
+		Set<Long> traitSet = new TreeSet<Long>();
+		List<TraitsValuePair> traitValuePair = new ArrayList<TraitsValuePair>();
+		List<Long> taxonomyList = new ArrayList<Long>();
+		try {
+			List<BreadCrumb> breadCrumbs = taxonomyService.getTaxonomyBreadCrumb(taxonId.toString());
+			for (BreadCrumb breadCrumb : breadCrumbs) {
+				taxonomyList.add(breadCrumb.getId());
+			}
+			// list of taxonomy id
+			List<TraitTaxonomyDefinition> taxonList = traitTaxonomyDef.findAllByTaxonomyList(taxonomyList);
+			for (TraitTaxonomyDefinition ttd : taxonList) {
+				traitSet.add(ttd.getTraitTaxonId());
+			}
+
+//			check for is observaation false
+			List<Long> filteredSpeciesTraitList = traitsDao.findSpeciesTraitFromList(traitSet);
+			traitSet.clear();
+			traitSet.addAll(filteredSpeciesTraitList);
+
+//			adding the root traits
+			List<Long> rootTrait = traitTaxonomyDef.findAllSpeciesRootTraits();
+			traitSet.addAll(rootTrait);
+
+//			get the values
+
+			Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false);
+
+			TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(
+					new Comparator<Traits>() {
+
+						@Override
+						public int compare(Traits o1, Traits o2) {
+							if (o1.getId() < o2.getId())
+								return -1;
+							return 1;
+						}
+					});
+			sorted.putAll(traitValueMap);
+
+			for (Traits traits : sorted.keySet()) {
+				traitValuePair.add(new TraitsValuePair(traits, traitValueMap.get(traits)));
+			}
+
+			return traitValuePair;
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+		return null;
+	}
+
+	@Override
+	public List<TraitsValuePair> getObservationTraitList(Long speciesGroupId) {
 		List<Long> observationTrait = traitsDao.findAllObservationTrait();
-		List<TraitTaxonomyDefinition> taxonList = traitTaxonomyDef.findAllTraitList(observationTrait); // trait id
-		List<Long> rootTrait = traitTaxonomyDef.findAllRootTrait();
+		List<TraitTaxonomyDefinition> taxonList = traitTaxonomyDef.findAllByTraitList(observationTrait); // trait id
+		List<Long> rootTrait = traitTaxonomyDef.findAllObservationRootTrait();
 		Set<Long> traitSet = new TreeSet<Long>();
 		List<TraitsValuePair> traitValuePair = new ArrayList<TraitsValuePair>();
 		try {
-			if (speciesId == 829) {
+			if (speciesGroupId == 829) {
 				traitSet.addAll(traitsDao.findAllObservationTrait());
 			} else {
 				List<String> taxonomyList = new ArrayList<String>();
 				for (TraitTaxonomyDefinition ttd : taxonList) {
 					taxonomyList.add(ttd.getTaxonomyDefifintionId().toString());
 				}
-				List<String> resultList = taxonomyService.getTaxonomyBySpecies(speciesId.toString(), taxonomyList);
+				List<String> resultList = taxonomyService.getTaxonomyBySpecies(speciesGroupId.toString(), taxonomyList);
 
 				for (String result : resultList) {
 					for (TraitTaxonomyDefinition ttd : taxonList) {
@@ -134,7 +191,7 @@ public class TraitsServicesImpl implements TraitsServices {
 				traitSet.add(trait);
 			}
 
-			Map<Traits, List<TraitsValue>> traitValueMap = traitTaxonomyDef.findTraitValueList(traitSet);
+			Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, true);
 
 			TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(
 					new Comparator<Traits>() {
@@ -168,7 +225,7 @@ public class TraitsServicesImpl implements TraitsServices {
 		List<FactValuePair> validFactList = new ArrayList<FactValuePair>();
 		List<FactValuePair> failedList = new ArrayList<FactValuePair>();
 		for (Map.Entry<Long, List<Long>> entry : factsCreateData.getFactValuePairs().entrySet()) {
-			List<TraitsValue> traitsValue = traistValueDao.findTraitsValue(entry.getKey());
+			List<TraitsValue> traitsValue = traitsValueDao.findTraitsValue(entry.getKey());
 			for (TraitsValue values : traitsValue) {
 				if (entry.getValue().contains(values.getId())) {
 					validFactList.add(
@@ -185,7 +242,7 @@ public class TraitsServicesImpl implements TraitsServices {
 			Facts result = factsDao.save(fact);
 
 			String trait = traitsDao.findById(fact.getTraitInstanceId()).getName();
-			String value = traistValueDao.findById(fact.getTraitValueId()).getValue();
+			String value = traitsValueDao.findById(fact.getTraitValueId()).getValue();
 			String description = trait + ":" + value;
 			if (result == null)
 				failedList.add(factValue);
@@ -206,7 +263,7 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	@Override
 	public List<TraitsValue> fetchTraitsValue(Long traitId) {
-		List<TraitsValue> result = traistValueDao.findTraitsValue(traitId);
+		List<TraitsValue> result = traitsValueDao.findTraitsValue(traitId);
 		return result;
 	}
 
@@ -234,7 +291,7 @@ public class TraitsServicesImpl implements TraitsServices {
 				}
 			}
 
-			List<TraitsValue> valueList = traistValueDao.findTraitsValue(traitId);
+			List<TraitsValue> valueList = traitsValueDao.findTraitsValue(traitId);
 			List<Long> validValueId = new ArrayList<Long>();
 			for (TraitsValue tv : valueList) {
 				validValueId.add(tv.getId());
@@ -260,7 +317,7 @@ public class TraitsServicesImpl implements TraitsServices {
 							null, objectType, null, null, null, null);
 					fact = factsDao.save(fact);
 					String traitName = trait.getName();
-					String value = traistValueDao.findById(fact.getTraitValueId()).getValue();
+					String value = traitsValueDao.findById(fact.getTraitValueId()).getValue();
 					String description = traitName + ":" + value;
 					logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId,
 							objectId, "observation", fact.getId(), activityType, factsUpdateData.getMailData());

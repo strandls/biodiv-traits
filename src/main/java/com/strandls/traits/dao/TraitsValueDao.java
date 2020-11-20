@@ -3,7 +3,11 @@
  */
 package com.strandls.traits.dao;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -13,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 
+import com.strandls.traits.pojo.Traits;
 import com.strandls.traits.pojo.TraitsValue;
 import com.strandls.traits.util.AbstractDAO;
 
@@ -64,6 +69,41 @@ public class TraitsValueDao extends AbstractDAO<TraitsValue, Long> {
 			session.close();
 		}
 		return entity;
+	}
+
+	@SuppressWarnings("unchecked")
+	public Map<Traits, List<TraitsValue>> findTraitValueList(Set<Long> traitSet, Boolean isObservation) {
+
+		String qry = "from Traits t left join TraitsValue tv on t.id = tv.traitInstanceId where t.id in (:traitSet) ";
+
+		if (isObservation)
+			qry = qry + "and t.showInObservation = TRUE";
+		Session session = sessionFactory.openSession();
+		List<Object[]> resultList = new ArrayList<Object[]>();
+		Map<Traits, List<TraitsValue>> traitValueMap = new HashMap<Traits, List<TraitsValue>>();
+		try {
+			Query<Object[]> query = session.createQuery(qry);
+			query.setParameter("traitSet", traitSet);
+			resultList = query.getResultList();
+			for (Object[] result : resultList) {
+				Traits traits = (Traits) result[0];
+				TraitsValue traitsValue = (TraitsValue) result[1];
+				List<TraitsValue> traitsValuesList = new ArrayList<TraitsValue>();
+				if (!traitValueMap.containsKey(traits)) {
+					traitsValuesList.add(traitsValue);
+				} else {
+					traitsValuesList = traitValueMap.get(traits);
+					traitsValuesList.add(traitsValue);
+				}
+				traitValueMap.put(traits, traitsValuesList);
+			}
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return traitValueMap;
 	}
 
 }
