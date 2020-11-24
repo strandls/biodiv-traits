@@ -106,6 +106,35 @@ public class TraitsServicesImpl implements TraitsServices {
 	}
 
 	@Override
+	public List<TraitsValuePair> getAllSpeciesTraits() {
+
+		Set<Long> traitSet = new TreeSet<Long>();
+		List<TraitsValuePair> traitValuePair = new ArrayList<TraitsValuePair>();
+		List<Long> speciesTraits = traitsDao.findAllSpeciesTraits();
+
+		traitSet.addAll(speciesTraits);
+		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false);
+
+		TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(new Comparator<Traits>() {
+
+			@Override
+			public int compare(Traits o1, Traits o2) {
+				if (o1.getId() < o2.getId())
+					return -1;
+				return 1;
+			}
+		});
+		sorted.putAll(traitValueMap);
+
+		for (Traits traits : sorted.keySet()) {
+			traitValuePair.add(new TraitsValuePair(traits, traitValueMap.get(traits)));
+		}
+
+		return traitValuePair;
+
+	}
+
+	@Override
 	public List<TraitsValuePair> getSpeciesTraits(Long taxonId) {
 //		List<Long> speciesTraits = traitsDao.findAllSpeciesTraits();
 

@@ -237,7 +237,7 @@ public class TraitsController {
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
-	@ApiOperation(value = "Species traits and value", notes = "Return all the species traits", response = TraitsValuePair.class, responseContainer = "List")
+	@ApiOperation(value = "Species traits and value", notes = "Return all the species traits for that taxon", response = TraitsValuePair.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
 
 	public Response getSpeciesTraits(@PathParam("taxonId") String taxonId) {
@@ -246,6 +246,22 @@ public class TraitsController {
 			List<TraitsValuePair> result = services.getSpeciesTraits(taxonConceptId);
 			return Response.status(Status.OK).entity(result).build();
 
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.SPECIES)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "All Species traits and value", notes = "Return all the species traits", response = TraitsValuePair.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
+
+	public Response getAllSpeciesTraits() {
+		try {
+			List<TraitsValuePair> result = services.getAllSpeciesTraits();
+			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}

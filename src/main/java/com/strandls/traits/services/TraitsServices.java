@@ -42,4 +42,6 @@ public interface TraitsServices {
 
 	public List<TraitsValuePair> getSpeciesTraits(Long taxonId);
 
+	public List<TraitsValuePair> getAllSpeciesTraits();
+
 }
