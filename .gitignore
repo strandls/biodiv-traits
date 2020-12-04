@@ -15,4 +15,5 @@ out/
 /bootstrap
 /dependencies.xml
 .java-version
+@ci/maven-toolbox
 deployOnVenus.sh
