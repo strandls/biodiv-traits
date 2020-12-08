@@ -75,7 +75,7 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 	@SuppressWarnings("unchecked")
 	public List<FactValuePair> getTraitValuePair(String objectType, Long objectId) {
 
-		String qry = "select t.id, t.name , v.id, v.value, t.traitTypes, t.isParticipatory from Facts f "
+		String qry = "select t.id, t.name , v.id, v.value, t.traitTypes, t.isParticipatory, f.value from Facts f "
 				+ "left join Traits t on f.traitInstanceId = t.id "
 				+ "left join TraitsValue v on f.traitValueId = v.id "
 				+ "where f.objectId = :id and f.objectType = :type";
@@ -92,8 +92,9 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 			fact = new ArrayList<FactValuePair>();
 			for (Object[] result : resultList) {
 				FactValuePair fvp = new FactValuePair(Long.parseLong(result[0].toString()), result[1].toString(),
-						Long.parseLong(result[2].toString()), result[3].toString(), result[4].toString(),
-						Boolean.parseBoolean(result[5].toString()));
+						(result[2].toString() != null) ? Long.parseLong(result[2].toString()) : null,
+						(result[3].toString() != null) ? result[3].toString() : result[6].toString(),
+						result[4].toString(), Boolean.parseBoolean(result[5].toString()));
 				fact.add(fvp);
 			}
 		} catch (Exception e) {
