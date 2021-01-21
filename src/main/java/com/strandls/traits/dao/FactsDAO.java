@@ -3,7 +3,9 @@
  */
 package com.strandls.traits.dao;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.hibernate.Session;
@@ -50,7 +52,7 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 
 	@SuppressWarnings("unchecked")
 	public FactValuePair getTraitvaluePairIbp(Long factId) {
-		String qry = "select t.id, t.name , v.id, v.value , t.traitTypes, t.isParticipatory from Facts f "
+		String qry = "select t.id, t.name , v.id, v.value, t.traitTypes, t.isParticipatory, f.value,f.to_value, f.from_date,f.to_date from Facts f "
 				+ "left join Traits t on f.traitInstanceId = t.id "
 				+ "left join TraitsValue v on f.traitValueId = v.id " + "where f.id = :id";
 		Session session = sessionFactory.openSession();
@@ -60,9 +62,28 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 			query.setParameter("id", factId);
 
 			Object[] result = query.getSingleResult();
+			String value = null;
+			if (result[3].toString() == null) {
+				value = result[6].toString() + (result[7].toString() != null ? " : " + result[7].toString() : "");
+			}
+
+			Date fromDate = null;
+			Date toDate = null;
+			if (result[3].toString() == null && value == null) {
+				String fDate = result[8].toString();
+				String tDate = result[9].toString();
+				String pattern = "yyyy-MM-dd";
+				SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+				if (fDate != null)
+					fromDate = sdf.parse(fDate);
+				if (tDate != null)
+					toDate = sdf.parse(tDate);
+			}
+
 			fact = new FactValuePair(Long.parseLong(result[0].toString()), result[1].toString(),
-					Long.parseLong(result[2].toString()), result[3].toString(), result[4].toString(),
-					Boolean.parseBoolean(result[5].toString()));
+					(result[2].toString() != null) ? Long.parseLong(result[2].toString()) : null,
+					(result[3].toString() != null) ? result[3].toString() : value, fromDate, toDate,
+					result[4].toString(), Boolean.parseBoolean(result[5].toString()));
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		} finally {
@@ -75,7 +96,7 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 	@SuppressWarnings("unchecked")
 	public List<FactValuePair> getTraitValuePair(String objectType, Long objectId) {
 
-		String qry = "select t.id, t.name , v.id, v.value, t.traitTypes, t.isParticipatory, f.value from Facts f "
+		String qry = "select t.id, t.name , v.id, v.value, t.traitTypes, t.isParticipatory, f.value,f.to_value, f.from_date,f.to_date from Facts f "
 				+ "left join Traits t on f.traitInstanceId = t.id "
 				+ "left join TraitsValue v on f.traitValueId = v.id "
 				+ "where f.objectId = :id and f.objectType = :type";
@@ -91,9 +112,28 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 			resultList = query.getResultList();
 			fact = new ArrayList<FactValuePair>();
 			for (Object[] result : resultList) {
+
+				String value = null;
+				if (result[3].toString() == null) {
+					value = result[6].toString() + (result[7].toString() != null ? " : " + result[7].toString() : "");
+				}
+
+				Date fromDate = null;
+				Date toDate = null;
+				if (result[3].toString() == null && value == null) {
+					String fDate = result[8].toString();
+					String tDate = result[9].toString();
+					String pattern = "yyyy-MM-dd";
+					SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+					if (fDate != null)
+						fromDate = sdf.parse(fDate);
+					if (tDate != null)
+						toDate = sdf.parse(tDate);
+				}
+
 				FactValuePair fvp = new FactValuePair(Long.parseLong(result[0].toString()), result[1].toString(),
 						(result[2].toString() != null) ? Long.parseLong(result[2].toString()) : null,
-						(result[3].toString() != null) ? result[3].toString() : result[6].toString(),
+						(result[3].toString() != null) ? result[3].toString() : value, fromDate, toDate,
 						result[4].toString(), Boolean.parseBoolean(result[5].toString()));
 				fact.add(fvp);
 			}

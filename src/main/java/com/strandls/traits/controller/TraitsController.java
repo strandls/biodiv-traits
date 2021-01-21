@@ -138,14 +138,14 @@ public class TraitsController {
 	}
 
 	@GET
-	@Path(ApiConstants.SPECIESID + "/{speciesId}")
+	@Path(ApiConstants.SPECIESGROUPID + "/{speciesGroupId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ApiOperation(value = "Find all Trait Values pair for Specific SpeciesGroupId", notes = "Return the Key value pairs of Traits", response = TraitsValuePair.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Species Not Found", response = String.class) })
 
-	public Response getTraitList(@PathParam("speciesId") String speciesGroupId) {
+	public Response getTraitList(@PathParam("speciesGroupId") String speciesGroupId) {
 
 		try {
 			Long sGroup = Long.parseLong(speciesGroupId);

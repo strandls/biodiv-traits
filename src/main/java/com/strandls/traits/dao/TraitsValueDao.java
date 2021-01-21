@@ -90,10 +90,12 @@ public class TraitsValueDao extends AbstractDAO<TraitsValue, Long> {
 				TraitsValue traitsValue = (TraitsValue) result[1];
 				List<TraitsValue> traitsValuesList = new ArrayList<TraitsValue>();
 				if (!traitValueMap.containsKey(traits)) {
-					traitsValuesList.add(traitsValue);
+					if (traitsValue != null)
+						traitsValuesList.add(traitsValue);
 				} else {
 					traitsValuesList = traitValueMap.get(traits);
-					traitsValuesList.add(traitsValue);
+					if (traitsValue != null)
+						traitsValuesList.add(traitsValue);
 				}
 				traitValueMap.put(traits, traitsValuesList);
 			}
