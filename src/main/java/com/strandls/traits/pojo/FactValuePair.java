@@ -3,6 +3,8 @@
  */
 package com.strandls.traits.pojo;
 
+import java.util.Date;
+
 import io.swagger.annotations.ApiModel;
 
 /**
@@ -15,7 +17,10 @@ public class FactValuePair {
 	private Long nameId;
 	private String name;
 	private Long valueId;
+//	it will hold , trait value, fromValue-toValue format v1:v2
 	private String value;
+	private Date fromDate;
+	private Date toDate;
 	private String type;
 	private Boolean isParticipatry;
 
@@ -31,15 +36,20 @@ public class FactValuePair {
 	 * @param name
 	 * @param valueId
 	 * @param value
+	 * @param fromDate
+	 * @param toDate
 	 * @param type
 	 * @param isParticipatry
 	 */
-	public FactValuePair(Long nameId, String name, Long valueId, String value, String type, Boolean isParticipatry) {
+	public FactValuePair(Long nameId, String name, Long valueId, String value, Date fromDate, Date toDate, String type,
+			Boolean isParticipatry) {
 		super();
 		this.nameId = nameId;
 		this.name = name;
 		this.valueId = valueId;
 		this.value = value;
+		this.fromDate = fromDate;
+		this.toDate = toDate;
 		this.type = type;
 		this.isParticipatry = isParticipatry;
 	}
@@ -74,6 +84,22 @@ public class FactValuePair {
 
 	public void setValue(String value) {
 		this.value = value;
+	}
+
+	public Date getFromDate() {
+		return fromDate;
+	}
+
+	public void setFromDate(Date fromDate) {
+		this.fromDate = fromDate;
+	}
+
+	public Date getToDate() {
+		return toDate;
+	}
+
+	public void setToDate(Date toDate) {
+		this.toDate = toDate;
 	}
 
 	public String getType() {

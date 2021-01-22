@@ -16,7 +16,7 @@ public class ApiConstants {
 	public static final String PING = "/ping";
 	public static final String FACTSERVICE = "/factservice";
 	public static final String IBP = "/ibp";
-	public static final String SPECIESID = "/speciesid";
+	public static final String SPECIESGROUPID = "/speciesgroupid";
 	public static final String CREATE = "/create";
 	public static final String TAXON = "/taxon";
 	public static final String VALUE = "/value";

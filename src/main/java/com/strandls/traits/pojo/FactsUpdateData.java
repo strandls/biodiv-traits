@@ -8,6 +8,8 @@ public class FactsUpdateData {
 
 	private MailData mailData;
 	private List<Long> traitValueList;
+	private List<String> valuesString;
+	private Long pageTaxonId;
 
 	/**
 	 * 
@@ -19,11 +21,15 @@ public class FactsUpdateData {
 	/**
 	 * @param mailData
 	 * @param traitValueList
+	 * @param valuesString
+	 * @param pageTaxonId
 	 */
-	public FactsUpdateData(MailData mailData, List<Long> traitValueList) {
+	public FactsUpdateData(MailData mailData, List<Long> traitValueList, List<String> valuesString, Long pageTaxonId) {
 		super();
 		this.mailData = mailData;
 		this.traitValueList = traitValueList;
+		this.valuesString = valuesString;
+		this.pageTaxonId = pageTaxonId;
 	}
 
 	public MailData getMailData() {
@@ -40,6 +46,22 @@ public class FactsUpdateData {
 
 	public void setTraitValueList(List<Long> traitValueList) {
 		this.traitValueList = traitValueList;
+	}
+
+	public List<String> getValuesString() {
+		return valuesString;
+	}
+
+	public void setValuesString(List<String> valuesString) {
+		this.valuesString = valuesString;
+	}
+
+	public Long getPageTaxonId() {
+		return pageTaxonId;
+	}
+
+	public void setPageTaxonId(Long pageTaxonId) {
+		this.pageTaxonId = pageTaxonId;
 	}
 
 }
