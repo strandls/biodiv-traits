@@ -52,7 +52,7 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 
 	@SuppressWarnings("unchecked")
 	public FactValuePair getTraitvaluePairIbp(Long factId) {
-		String qry = "select t.id, t.name , v.id, v.value, t.traitTypes, t.isParticipatory, f.value,f.to_value, f.from_date,f.to_date from Facts f "
+		String qry = "select t.id, t.name , v.id, v.value, t.traitTypes, t.isParticipatory, f.value, f.toValue, f.fromDate, f.toDate from Facts f "
 				+ "left join Traits t on f.traitInstanceId = t.id "
 				+ "left join TraitsValue v on f.traitValueId = v.id " + "where f.id = :id";
 		Session session = sessionFactory.openSession();
@@ -96,7 +96,7 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 	@SuppressWarnings("unchecked")
 	public List<FactValuePair> getTraitValuePair(String objectType, Long objectId) {
 
-		String qry = "select t.id, t.name , v.id, v.value, t.traitTypes, t.isParticipatory, f.value,f.to_value, f.from_date,f.to_date from Facts f "
+		String qry = "select t.id, t.name , v.id, v.value, t.traitTypes, t.isParticipatory, f.value, f.toValue, f.fromDate, f.toDate from Facts f "
 				+ "left join Traits t on f.traitInstanceId = t.id "
 				+ "left join TraitsValue v on f.traitValueId = v.id "
 				+ "where f.objectId = :id and f.objectType = :type";
