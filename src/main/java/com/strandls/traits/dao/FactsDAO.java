@@ -63,13 +63,10 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 
 			Object[] result = query.getSingleResult();
 			String value = null;
-			if (result[3].toString() == null) {
-				value = result[6].toString() + (result[7].toString() != null ? " : " + result[7].toString() : "");
-			}
 
 			Date fromDate = null;
 			Date toDate = null;
-			if (result[3].toString() == null && value == null) {
+			if (result[3] == null && result[6] == null) {
 				String fDate = result[8].toString();
 				String tDate = result[9].toString();
 				String pattern = "yyyy-MM-dd";
@@ -78,12 +75,14 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 					fromDate = sdf.parse(fDate);
 				if (tDate != null)
 					toDate = sdf.parse(tDate);
+			} else if (result[3] == null) {
+				value = result[6].toString() + (result[7] != null ? ":" + result[7].toString() : "");
 			}
 
 			fact = new FactValuePair(Long.parseLong(result[0].toString()), result[1].toString(),
-					(result[2].toString() != null) ? Long.parseLong(result[2].toString()) : null,
-					(result[3].toString() != null) ? result[3].toString() : value, fromDate, toDate,
-					result[4].toString(), Boolean.parseBoolean(result[5].toString()));
+					(result[2] != null) ? Long.parseLong(result[2].toString()) : null,
+					(result[3] != null) ? result[3].toString() : value, fromDate, toDate, result[4].toString(),
+					Boolean.parseBoolean(result[5].toString()));
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		} finally {
