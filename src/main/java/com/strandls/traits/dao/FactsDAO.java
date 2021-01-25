@@ -127,7 +127,7 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 				}
 
 				else if (result[3] == null) {
-					value = result[6].toString() + (result[7] != null ? " : " + result[7].toString() : "");
+					value = result[6].toString() + (result[7] != null ? ":" + result[7].toString() : "");
 				}
 
 				FactValuePair fvp = new FactValuePair(Long.parseLong(result[0].toString()), result[1].toString(),
