@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.strandls.authentication_utility.util.AuthUtil;
-import com.strandls.taxonomy.controllers.TaxonomyServicesApi;
+import com.strandls.taxonomy.controllers.SpeciesServicesApi;
 import com.strandls.traits.dao.FactsDAO;
 import com.strandls.traits.dao.TraitTaxonomyDefinitionDao;
 import com.strandls.traits.dao.TraitsDao;
@@ -60,7 +60,7 @@ public class TraitsServicesImpl implements TraitsServices {
 	private TraitTaxonomyDefinitionDao traitTaxonomyDef;
 
 	@Inject
-	private TaxonomyServicesApi taxonomyService;
+	private SpeciesServicesApi speciesService;
 
 	@Inject
 	private TraitsValueDao traistValueDao;
@@ -119,7 +119,7 @@ public class TraitsServicesImpl implements TraitsServices {
 				for (TraitTaxonomyDefinition ttd : taxonList) {
 					taxonomyList.add(ttd.getTaxonomyDefifintionId().toString());
 				}
-				List<String> resultList = taxonomyService.getTaxonomyBySpecies(speciesId.toString(), taxonomyList);
+				List<String> resultList = speciesService.getTaxonomyBySpeciesGroup(speciesId.toString(), taxonomyList);
 
 				for (String result : resultList) {
 					for (TraitTaxonomyDefinition ttd : taxonList) {
