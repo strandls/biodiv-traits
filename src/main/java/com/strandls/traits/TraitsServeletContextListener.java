@@ -29,6 +29,7 @@ import com.google.inject.servlet.GuiceServletContextListener;
 import com.google.inject.servlet.ServletModule;
 import com.strandls.activity.controller.ActivitySerivceApi;
 import com.strandls.taxonomy.controllers.SpeciesServicesApi;
+import com.strandls.taxonomy.controllers.TaxonomyTreeServicesApi;
 import com.strandls.traits.controller.TraitsControllerModule;
 import com.strandls.traits.dao.TraitsDAOModule;
 import com.strandls.traits.services.Impl.TraitsServiceModule;
@@ -69,6 +70,7 @@ public class TraitsServeletContextListener extends GuiceServletContextListener {
 
 				bind(SessionFactory.class).toInstance(sessionFactory);
 				bind(SpeciesServicesApi.class).in(Scopes.SINGLETON);
+				bind(TaxonomyTreeServicesApi.class).in(Scopes.SINGLETON);
 				bind(ActivitySerivceApi.class).in(Scopes.SINGLETON);
 				bind(Headers.class).in(Scopes.SINGLETON);
 				bind(ServletContainer.class).in(Scopes.SINGLETON);

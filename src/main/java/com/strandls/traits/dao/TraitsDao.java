@@ -5,6 +5,7 @@ package com.strandls.traits.dao;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -61,6 +62,41 @@ public class TraitsDao extends AbstractDAO<Traits, Long> {
 			session.close();
 		}
 
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Long> findSpeciesTraitFromList(Set<Long> traitList) {
+		String qry = "select id from Traits where showInObservation = FALSE and isDeleted = FALSE and id in :traitList";
+		Session session = sessionFactory.openSession();
+		List<Long> result = new ArrayList<Long>();
+		try {
+			Query<Long> query = session.createQuery(qry);
+			query.setParameter("traitList", traitList);
+			result = query.getResultList();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Long> findAllSpeciesTraits() {
+		String qry = "select id from Traits where showInObservation = FALSE and isDeleted = FALSE";
+		Session session = sessionFactory.openSession();
+		List<Long> result = new ArrayList<Long>();
+		try {
+			Query<Long> query = session.createQuery(qry);
+			result = query.getResultList();
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
 		return result;
 	}
 
