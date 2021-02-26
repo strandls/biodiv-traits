@@ -71,8 +71,8 @@ public class TraitsServicesImpl implements TraitsServices {
 	private TraitsValueDao traitsValueDao;
 
 	@Override
-	public List<FactValuePair> getFacts(String objectType, Long objectId) {
-		List<FactValuePair> facts = factsDao.getTraitValuePair(objectType, objectId);
+	public List<FactValuePair> getFacts(String objectType, Long objectId, Long traitId) {
+		List<FactValuePair> facts = factsDao.getTraitValuePair(objectType, objectId, traitId);
 		return facts;
 	}
 
@@ -335,7 +335,7 @@ public class TraitsServicesImpl implements TraitsServices {
 
 			}
 
-			return getFacts(objectType, objectId);
+			return getFacts(objectType, objectId, null);
 
 		} catch (Exception e) {
 			logger.error(e.getMessage());
@@ -384,12 +384,12 @@ public class TraitsServicesImpl implements TraitsServices {
 
 			Traits trait = traitsDao.findById(traitId);
 			if (trait.getTraitTypes().equals("SINGLE_CATEGORICAL")) {
-				if (traitsValueList != null) {
+				if (traitsValueList != null && !traitsValueList.isEmpty()) {
 					Long value = traitsValueList.get(0);
 					traitsValueList.clear();
 					traitsValueList.add(value);
 				}
-				if (valueString != null) {
+				if (valueString != null && !valueString.isEmpty()) {
 					String value = valueString.get(0);
 					valueString.clear();
 					valueString.add(value);
@@ -417,24 +417,26 @@ public class TraitsServicesImpl implements TraitsServices {
 			List<Long> previousValueId = new ArrayList<Long>();
 //			deleting previous fatcs
 			List<Facts> previousFacts = factsDao.fetchByTraitId(objectType, objectId, traitId);
-			for (Facts fact : previousFacts) {
+			if (previousFacts != null && !previousFacts.isEmpty()) {
+				for (Facts fact : previousFacts) {
 
-				if (traitsValueList != null) {
-					if (!(traitsValueList.contains(fact.getTraitValueId()))) {
-						factsDao.delete(fact);
-					}
-					previousValueId.add(fact.getTraitValueId());
-				} else if (valueString != null) {
-
-					if (trait.getDataType().equalsIgnoreCase("COLOR")) {
-						if (!(valueString.contains(fact.getValue()))) {
+					if (traitsValueList != null && !traitsValueList.isEmpty()) {
+						if (!(traitsValueList.contains(fact.getTraitValueId()))) {
 							factsDao.delete(fact);
 						}
-					} else if (trait.getDataType().equalsIgnoreCase("NUMERIC")) {
-						factsDao.delete(fact);
+						previousValueId.add(fact.getTraitValueId());
+					} else if (valueString != null && !valueString.isEmpty()) {
 
-					} else if (trait.getDataType().equalsIgnoreCase("DATE")) {
-						factsDao.delete(fact);
+						if (trait.getDataType().equalsIgnoreCase("COLOR")) {
+							if (!(valueString.contains(fact.getValue()))) {
+								factsDao.delete(fact);
+							}
+						} else if (trait.getDataType().equalsIgnoreCase("NUMERIC")) {
+							factsDao.delete(fact);
+
+						} else if (trait.getDataType().equalsIgnoreCase("DATE")) {
+							factsDao.delete(fact);
+						}
 					}
 				}
 			}
@@ -499,7 +501,7 @@ public class TraitsServicesImpl implements TraitsServices {
 				}
 			}
 
-			return getFacts(objectType, objectId);
+			return getFacts(objectType, objectId, traitId);
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
