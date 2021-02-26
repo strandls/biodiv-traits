@@ -71,8 +71,8 @@ public class TraitsServicesImpl implements TraitsServices {
 	private TraitsValueDao traitsValueDao;
 
 	@Override
-	public List<FactValuePair> getFacts(String objectType, Long objectId) {
-		List<FactValuePair> facts = factsDao.getTraitValuePair(objectType, objectId);
+	public List<FactValuePair> getFacts(String objectType, Long objectId, Long traitId) {
+		List<FactValuePair> facts = factsDao.getTraitValuePair(objectType, objectId, traitId);
 		return facts;
 	}
 
@@ -335,7 +335,7 @@ public class TraitsServicesImpl implements TraitsServices {
 
 			}
 
-			return getFacts(objectType, objectId);
+			return getFacts(objectType, objectId, null);
 
 		} catch (Exception e) {
 			logger.error(e.getMessage());
@@ -501,7 +501,7 @@ public class TraitsServicesImpl implements TraitsServices {
 				}
 			}
 
-			return getFacts(objectType, objectId);
+			return getFacts(objectType, objectId, traitId);
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
