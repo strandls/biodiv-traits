@@ -348,14 +348,14 @@ public class TraitsServicesImpl implements TraitsServices {
 	private void saveUpdateFacts(HttpServletRequest request, String objectType, Long objectId, Facts facts,
 			String description, String activityType, MailData mailData) {
 		Facts result = factsDao.save(facts);
-//		if (result != null) {
-//			if (objectType.equalsIgnoreCase("species.participation.Observation"))
-//				logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId, objectId,
-//						"observation", result.getId(), activityType, mailData);
-//			else if (objectType.equalsIgnoreCase("species.Species"))
-//				logActivity.logSpeciesActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId,
-//						objectId, "species", result.getId(), activityType, mailData);
-//		}
+		if (result != null) {
+			if (objectType.equalsIgnoreCase("species.participation.Observation"))
+				logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId, objectId,
+						"observation", result.getId(), activityType, mailData);
+			else if (objectType.equalsIgnoreCase("species.Species"))
+				logActivity.logSpeciesActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId,
+						objectId, "species", result.getId(), activityType, mailData);
+		}
 	}
 
 	@Override
@@ -465,8 +465,8 @@ public class TraitsServicesImpl implements TraitsServices {
 				for (String value : valueString) {
 					if (trait.getDataType().equalsIgnoreCase("COLOR")) {
 						Facts facts = new Facts(null, 0L, attribution, userId, false, 822L, objectId,
-								factsUpdateData.getPageTaxonId(), traitId, null, value, objectType, null, null, null,
-								null);
+								factsUpdateData.getPageTaxonId(), traitId, null, value.trim(), objectType, null, null,
+								null, null);
 						String description = trait.getName() + ":" + value;
 
 						saveUpdateFacts(request, objectType, objectId, facts, description, activityType,
@@ -476,8 +476,8 @@ public class TraitsServicesImpl implements TraitsServices {
 
 						String[] values = value.split(":");
 						Facts facts = new Facts(null, 0L, attribution, userId, false, 822L, objectId,
-								factsUpdateData.getPageTaxonId(), traitId, null, values[0].trim(), objectType, values[1].trim(), null,
-								null, null);
+								factsUpdateData.getPageTaxonId(), traitId, null, values[0].trim(), objectType,
+								values[1].trim(), null, null, null);
 						String description = trait.getName() + ":" + value;
 
 						saveUpdateFacts(request, objectType, objectId, facts, description, activityType,
@@ -487,8 +487,8 @@ public class TraitsServicesImpl implements TraitsServices {
 						String values[] = value.split(":");
 						String pattern = "yyyy-MM-dd";
 						SimpleDateFormat sdf = new SimpleDateFormat(pattern);
-						Date fromDate = sdf.parse(values[0]);
-						Date toDate = sdf.parse(values[1]);
+						Date fromDate = sdf.parse(values[0].trim());
+						Date toDate = sdf.parse(values[1].trim());
 
 						Facts facts = new Facts(null, 0L, attribution, userId, false, 822L, objectId,
 								factsUpdateData.getPageTaxonId(), traitId, null, null, objectType, null, fromDate,
