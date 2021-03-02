@@ -348,14 +348,14 @@ public class TraitsServicesImpl implements TraitsServices {
 	private void saveUpdateFacts(HttpServletRequest request, String objectType, Long objectId, Facts facts,
 			String description, String activityType, MailData mailData) {
 		Facts result = factsDao.save(facts);
-		if (result != null) {
-			if (objectType.equalsIgnoreCase("species.participation.Observation"))
-				logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId, objectId,
-						"observation", result.getId(), activityType, mailData);
-			else if (objectType.equalsIgnoreCase("species.Species"))
-				logActivity.logSpeciesActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId,
-						objectId, "species", result.getId(), activityType, mailData);
-		}
+//		if (result != null) {
+//			if (objectType.equalsIgnoreCase("species.participation.Observation"))
+//				logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId, objectId,
+//						"observation", result.getId(), activityType, mailData);
+//			else if (objectType.equalsIgnoreCase("species.Species"))
+//				logActivity.logSpeciesActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId,
+//						objectId, "species", result.getId(), activityType, mailData);
+//		}
 	}
 
 	@Override
@@ -400,7 +400,8 @@ public class TraitsServicesImpl implements TraitsServices {
 			if (objectType.equalsIgnoreCase("species.Species"))
 				attribution = trait.getSource();
 
-			if (trait.getIsParticipatory() == false) {
+			if (objectType.equalsIgnoreCase("species.participation.Observation")
+					&& trait.getIsParticipatory() == false) {
 				Long authorId = factsDao.getObservationAuthor(objectId.toString());
 				if (!(userRole.contains("ROLE_ADMIN") || authorId != userId)) {
 					throw new TraitsException("User not allowed to add this traits");
@@ -446,7 +447,7 @@ public class TraitsServicesImpl implements TraitsServices {
 				activityType = "Added a fact";
 
 //			adding new facts
-			if (traitsValueList != null) {
+			if (traitsValueList != null && !traitsValueList.isEmpty()) {
 				for (Long newValue : traitsValueList) {
 					if (!(previousValueId.contains(newValue)) && validValueId.contains(newValue)) {
 						Facts fact = new Facts(null, 0L, attribution, userId, false, 822L, objectId, null, traitId,
@@ -460,7 +461,7 @@ public class TraitsServicesImpl implements TraitsServices {
 
 					}
 				}
-			} else if (valueString != null) {
+			} else if (valueString != null && !valueString.isEmpty()) {
 				for (String value : valueString) {
 					if (trait.getDataType().equalsIgnoreCase("COLOR")) {
 						Facts facts = new Facts(null, 0L, attribution, userId, false, 822L, objectId,
@@ -475,7 +476,7 @@ public class TraitsServicesImpl implements TraitsServices {
 
 						String[] values = value.split(":");
 						Facts facts = new Facts(null, 0L, attribution, userId, false, 822L, objectId,
-								factsUpdateData.getPageTaxonId(), traitId, null, values[0], objectType, values[1], null,
+								factsUpdateData.getPageTaxonId(), traitId, null, values[0].trim(), objectType, values[1].trim(), null,
 								null, null);
 						String description = trait.getName() + ":" + value;
 
