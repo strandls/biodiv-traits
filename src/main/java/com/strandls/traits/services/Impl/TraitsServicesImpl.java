@@ -40,6 +40,7 @@ import com.strandls.traits.pojo.Traits;
 import com.strandls.traits.pojo.TraitsValue;
 import com.strandls.traits.pojo.TraitsValuePair;
 import com.strandls.traits.services.TraitsServices;
+import com.strandls.traits.util.PropertyFileUtil;
 import com.strandls.traits.util.TraitsException;
 
 import net.minidev.json.JSONArray;
@@ -69,6 +70,9 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	@Inject
 	private TraitsValueDao traitsValueDao;
+
+	private Long defaultLicenseId = Long
+			.parseLong(PropertyFileUtil.fetchProperty("config.properties", "defaultLicenseId"));
 
 	@Override
 	public List<FactValuePair> getFacts(String objectType, Long objectId, Long traitId) {
@@ -270,7 +274,7 @@ public class TraitsServicesImpl implements TraitsServices {
 						String attribution = userName;
 						if (objectType.equalsIgnoreCase("species.Species"))
 							attribution = traits.getSource();
-						Facts facts = new Facts(null, 0L, attribution, userId, false, 822L, objectId,
+						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
 								factsCreateData.getPageTaxonId(), entry.getKey(), values.getId(), null, objectType,
 								null, null, null, null);
 						String description = traits.getName() + ":" + values.getValue();
@@ -291,7 +295,7 @@ public class TraitsServicesImpl implements TraitsServices {
 
 				if (traits.getDataType().equalsIgnoreCase("COLOR")) {
 					for (String color : entry.getValue()) {
-						Facts facts = new Facts(null, 0L, attribution, userId, false, 822L, objectId,
+						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
 								factsCreateData.getPageTaxonId(), entry.getKey(), null, color, objectType, null, null,
 								null, null);
 						String description = traits.getName() + ":" + color;
@@ -303,7 +307,7 @@ public class TraitsServicesImpl implements TraitsServices {
 				} else if (traits.getDataType().equalsIgnoreCase("NUMERIC")) {
 					for (String range : entry.getValue()) {
 						String[] value = range.split(":");
-						Facts facts = new Facts(null, 0L, attribution, userId, false, 822L, objectId,
+						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
 								factsCreateData.getPageTaxonId(), entry.getKey(), null, value[0], objectType, value[1],
 								null, null, null);
 						String description = traits.getName() + ":" + range;
@@ -321,7 +325,7 @@ public class TraitsServicesImpl implements TraitsServices {
 						Date fromDate = sdf.parse(value[0]);
 						Date toDate = sdf.parse(value[1]);
 
-						Facts facts = new Facts(null, 0L, attribution, userId, false, 822L, objectId,
+						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
 								factsCreateData.getPageTaxonId(), entry.getKey(), null, null, objectType, null,
 								fromDate, toDate, null);
 
@@ -450,8 +454,8 @@ public class TraitsServicesImpl implements TraitsServices {
 			if (traitsValueList != null && !traitsValueList.isEmpty()) {
 				for (Long newValue : traitsValueList) {
 					if (!(previousValueId.contains(newValue)) && validValueId.contains(newValue)) {
-						Facts fact = new Facts(null, 0L, attribution, userId, false, 822L, objectId, null, traitId,
-								newValue, null, objectType, null, null, null, null);
+						Facts fact = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId, null,
+								traitId, newValue, null, objectType, null, null, null, null);
 
 						String value = traitsValueDao.findById(fact.getTraitValueId()).getValue();
 						String description = trait.getName() + ":" + value;
@@ -464,7 +468,7 @@ public class TraitsServicesImpl implements TraitsServices {
 			} else if (valueString != null && !valueString.isEmpty()) {
 				for (String value : valueString) {
 					if (trait.getDataType().equalsIgnoreCase("COLOR")) {
-						Facts facts = new Facts(null, 0L, attribution, userId, false, 822L, objectId,
+						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
 								factsUpdateData.getPageTaxonId(), traitId, null, value.trim(), objectType, null, null,
 								null, null);
 						String description = trait.getName() + ":" + value;
@@ -475,7 +479,7 @@ public class TraitsServicesImpl implements TraitsServices {
 					} else if (trait.getDataType().equalsIgnoreCase("NUMERIC")) {
 
 						String[] values = value.split(":");
-						Facts facts = new Facts(null, 0L, attribution, userId, false, 822L, objectId,
+						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
 								factsUpdateData.getPageTaxonId(), traitId, null, values[0].trim(), objectType,
 								values[1].trim(), null, null, null);
 						String description = trait.getName() + ":" + value;
@@ -490,7 +494,7 @@ public class TraitsServicesImpl implements TraitsServices {
 						Date fromDate = sdf.parse(values[0].trim());
 						Date toDate = sdf.parse(values[1].trim());
 
-						Facts facts = new Facts(null, 0L, attribution, userId, false, 822L, objectId,
+						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
 								factsUpdateData.getPageTaxonId(), traitId, null, null, objectType, null, fromDate,
 								toDate, null);
 
