@@ -24,8 +24,13 @@ public class Traits implements Serializable {
 	 */
 	private static final long serialVersionUID = -7750012729432714454L;
 	private Long id;
+	private String dataType;
+	private String description;
+	private Long fieldId;
 	private String name;
 	private String traitTypes;
+	private String units;
+	private Boolean isNotObservationTraits;
 	private Boolean showInObservation;
 	private Boolean isParticipatory;
 	private Boolean isDeleted;
@@ -40,6 +45,33 @@ public class Traits implements Serializable {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	@Column(name = "data_types")
+	public String getDataType() {
+		return dataType;
+	}
+
+	public void setDataType(String dataType) {
+		this.dataType = dataType;
+	}
+
+	@Column(name = "description", columnDefinition = "TEXT")
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	@Column(name = "field_id")
+	public Long getFieldId() {
+		return fieldId;
+	}
+
+	public void setFieldId(Long fieldId) {
+		this.fieldId = fieldId;
 	}
 
 	@Column(name = "name")
@@ -86,7 +118,7 @@ public class Traits implements Serializable {
 	public void setIsDeleted(Boolean isDeleted) {
 		this.isDeleted = isDeleted;
 	}
-	
+
 	@Column(name = "source")
 	public String getSource() {
 		return source;
@@ -96,5 +128,22 @@ public class Traits implements Serializable {
 		this.source = source;
 	}
 
-	
+	@Column(name = "units")
+	public String getUnits() {
+		return units;
+	}
+
+	public void setUnits(String units) {
+		this.units = units;
+	}
+
+	@Column(name = "is_not_observation_trait")
+	public Boolean getIsNotObservationTraits() {
+		return isNotObservationTraits;
+	}
+
+	public void setIsNotObservationTraits(Boolean isNotObservationTraits) {
+		this.isNotObservationTraits = isNotObservationTraits;
+	}
+
 }

@@ -3,16 +3,18 @@
  */
 package com.strandls.traits.dao;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import javax.inject.Inject;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
 
 import com.strandls.traits.pojo.FactValuePair;
 import com.strandls.traits.pojo.Facts;
@@ -50,7 +52,7 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 
 	@SuppressWarnings("unchecked")
 	public FactValuePair getTraitvaluePairIbp(Long factId) {
-		String qry = "select t.id, t.name , v.id, v.value , t.traitTypes, t.isParticipatory from Facts f "
+		String qry = "select t.id, t.name , v.id, v.value, t.traitTypes, t.isParticipatory, f.value, f.toValue, f.fromDate, f.toDate from Facts f "
 				+ "left join Traits t on f.traitInstanceId = t.id "
 				+ "left join TraitsValue v on f.traitValueId = v.id " + "where f.id = :id";
 		Session session = sessionFactory.openSession();
@@ -60,8 +62,26 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 			query.setParameter("id", factId);
 
 			Object[] result = query.getSingleResult();
+			String value = null;
+
+			Date fromDate = null;
+			Date toDate = null;
+			if (result[3] == null && result[6] == null) {
+				String fDate = result[8].toString();
+				String tDate = result[9].toString();
+				String pattern = "yyyy-MM-dd";
+				SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+				if (fDate != null)
+					fromDate = sdf.parse(fDate);
+				if (tDate != null)
+					toDate = sdf.parse(tDate);
+			} else if (result[3] == null) {
+				value = result[6].toString() + (result[7] != null ? ":" + result[7].toString() : "");
+			}
+
 			fact = new FactValuePair(Long.parseLong(result[0].toString()), result[1].toString(),
-					Long.parseLong(result[2].toString()), result[3].toString(), result[4].toString(),
+					(result[2] != null) ? Long.parseLong(result[2].toString()) : null,
+					(result[3] != null) ? result[3].toString() : value, fromDate, toDate, result[4].toString(),
 					Boolean.parseBoolean(result[5].toString()));
 		} catch (Exception e) {
 			logger.error(e.getMessage());
@@ -73,12 +93,16 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<FactValuePair> getTraitValuePair(String objectType, Long objectId) {
+	public List<FactValuePair> getTraitValuePair(String objectType, Long objectId, Long traitId) {
 
-		String qry = "select t.id, t.name , v.id, v.value, t.traitTypes, t.isParticipatory from Facts f "
+		String qry = "select t.id, t.name , v.id, v.value, t.traitTypes, t.isParticipatory, f.value, f.toValue, f.fromDate, f.toDate from Facts f "
 				+ "left join Traits t on f.traitInstanceId = t.id "
 				+ "left join TraitsValue v on f.traitValueId = v.id "
 				+ "where f.objectId = :id and f.objectType = :type";
+
+		if (traitId != null)
+			qry = qry + " and f.traitInstanceId = :traitId";
+
 		Session session = sessionFactory.openSession();
 		List<FactValuePair> fact = null;
 
@@ -86,13 +110,35 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 			Query<Object[]> query = session.createQuery(qry);
 			query.setParameter("id", objectId);
 			query.setParameter("type", objectType);
+			if (traitId != null)
+				query.setParameter("traitId", traitId);
 
 			List<Object[]> resultList = new ArrayList<Object[]>();
 			resultList = query.getResultList();
 			fact = new ArrayList<FactValuePair>();
 			for (Object[] result : resultList) {
+
+				String value = null;
+				Date fromDate = null;
+				Date toDate = null;
+				if (result[3] == null && result[6] == null) {
+					String fDate = result[8].toString();
+					String tDate = result[9].toString();
+					String pattern = "yyyy-MM-dd";
+					SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+					if (fDate != null)
+						fromDate = sdf.parse(fDate);
+					if (tDate != null)
+						toDate = sdf.parse(tDate);
+				}
+
+				else if (result[3] == null) {
+					value = result[6].toString() + (result[7] != null ? ":" + result[7].toString() : "");
+				}
+
 				FactValuePair fvp = new FactValuePair(Long.parseLong(result[0].toString()), result[1].toString(),
-						Long.parseLong(result[2].toString()), result[3].toString(), result[4].toString(),
+						(result[2] != null) ? Long.parseLong(result[2].toString()) : null,
+						(result[3] != null) ? result[3].toString() : value, fromDate, toDate, result[4].toString(),
 						Boolean.parseBoolean(result[5].toString()));
 				fact.add(fvp);
 			}

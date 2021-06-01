@@ -4,10 +4,9 @@
 package com.strandls.traits.dao;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import javax.inject.Inject;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -15,11 +14,7 @@ import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
-
 import com.strandls.traits.pojo.TraitTaxonomyDefinition;
-import com.strandls.traits.pojo.Traits;
-import com.strandls.traits.pojo.TraitsValue;
 import com.strandls.traits.util.AbstractDAO;
 
 /**
@@ -53,7 +48,7 @@ public class TraitTaxonomyDefinitionDao extends AbstractDAO<TraitTaxonomyDefinit
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<TraitTaxonomyDefinition> findAllTraitList(List<Long> traitList) {
+	public List<TraitTaxonomyDefinition> findAllByTraitList(List<Long> traitList) {
 		String qry = "from TraitTaxonomyDefinition where traitTaxonId in :traitList";
 		List<TraitTaxonomyDefinition> result = new ArrayList<TraitTaxonomyDefinition>();
 		Session session = sessionFactory.openSession();
@@ -70,8 +65,26 @@ public class TraitTaxonomyDefinitionDao extends AbstractDAO<TraitTaxonomyDefinit
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<Long> findAllRootTrait() {
-		String qry = "select t.id from Traits t left join TraitTaxonomyDefinition ttd on ttd.traitTaxonId = t.id where ttd.taxonomyDefifintionId is NULL";
+	public List<TraitTaxonomyDefinition> findAllByTaxonomyList(List<Long> taxonomyList) {
+		String qry = "from TraitTaxonomyDefinition where taxonomyDefifintionId in :taxonList";
+		List<TraitTaxonomyDefinition> result = new ArrayList<TraitTaxonomyDefinition>();
+		Session session = sessionFactory.openSession();
+		try {
+			Query<TraitTaxonomyDefinition> query = session.createQuery(qry);
+			query.setParameter("taxonList", taxonomyList);
+			result = query.getResultList();
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Long> findAllObservationRootTrait() {
+		String qry = "select t.id from Traits t left join TraitTaxonomyDefinition ttd on ttd.traitTaxonId = t.id where t.showInObservation = true and ttd.taxonomyDefifintionId is NULL and t.isDeleted = FALSE";
 		Session session = sessionFactory.openSession();
 		List<Long> resultList = new ArrayList<Long>();
 
@@ -89,36 +102,23 @@ public class TraitTaxonomyDefinitionDao extends AbstractDAO<TraitTaxonomyDefinit
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<Traits, List<TraitsValue>> findTraitValueList(Set<Long> traitSet) {
-
-		String qry = "from Traits t left join TraitsValue tv on t.id = tv.traitInstanceId where t.id in (:traitSet) "
-				+ "and t.showInObservation = TRUE";
+	public List<Long> findAllSpeciesRootTraits() {
+		String qry = "select t.id from Traits t left join TraitTaxonomyDefinition ttd on ttd.traitTaxonId = t.id where t.isNotObservationTraits = true and ttd.taxonomyDefifintionId is NULL and t.isDeleted = FALSE";
 		Session session = sessionFactory.openSession();
-		List<Object[]> resultList = new ArrayList<Object[]>();
-		Map<Traits, List<TraitsValue>> traitValueMap = new HashMap<Traits, List<TraitsValue>>();
+		List<Long> resultList = new ArrayList<Long>();
+
 		try {
-			Query<Object[]> query = session.createQuery(qry);
-			query.setParameter("traitSet", traitSet);
+			Query<Long> query = session.createQuery(qry);
 			resultList = query.getResultList();
-			for (Object[] result : resultList) {
-				Traits traits = (Traits) result[0];
-				TraitsValue traitsValue = (TraitsValue) result[1];
-				List<TraitsValue> traitsValuesList = new ArrayList<TraitsValue>();
-				if (!traitValueMap.containsKey(traits)) {
-					traitsValuesList.add(traitsValue);
-				} else {
-					traitsValuesList = traitValueMap.get(traits);
-					traitsValuesList.add(traitsValue);
-				}
-				traitValueMap.put(traits, traitsValuesList);
-			}
 
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		} finally {
 			session.close();
 		}
-		return traitValueMap;
+
+		return resultList;
+
 	}
 
 }

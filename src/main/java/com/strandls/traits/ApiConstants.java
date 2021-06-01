@@ -16,12 +16,13 @@ public class ApiConstants {
 	public static final String PING = "/ping";
 	public static final String FACTSERVICE = "/factservice";
 	public static final String IBP = "/ibp";
-	public static final String SPECIESID = "/speciesid";
+	public static final String SPECIESGROUPID = "/speciesgroupid";
 	public static final String CREATE = "/create";
 	public static final String TAXON = "/taxon";
 	public static final String VALUE = "/value";
 	public static final String UPDATE = "/update";
 	public static final String TRAIT = "/trait";
 	public static final String ALL = "/all";
+	public static final String SPECIES = "/species";
 
 }

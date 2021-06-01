@@ -20,13 +20,13 @@ import com.strandls.traits.pojo.TraitsValuePair;
  */
 public interface TraitsServices {
 
-	public List<FactValuePair> getFacts(String objectType, Long objectId);
+	public List<FactValuePair> getFacts(String objectType, Long objectId, Long traitId);
 
 	public FactValuePair getFactIbp(Long id);
 
-	public List<TraitsValuePair> getAllTraits();
+	public List<TraitsValuePair> getAllObservationTraits();
 
-	public List<TraitsValuePair> getTraitList(Long speciesId);
+	public List<TraitsValuePair> getObservationTraitList(Long speciesId);
 
 	public List<FactValuePair> createFacts(HttpServletRequest request, String objectType, Long objectId,
 			FactsCreateData factsCreateData);
@@ -39,5 +39,9 @@ public interface TraitsServices {
 
 	public List<FactValuePair> updateTraits(HttpServletRequest request, String objectType, Long objectId, Long traitId,
 			FactsUpdateData factsUpdateData);
+
+	public List<TraitsValuePair> getSpeciesTraits(Long taxonId);
+
+	public List<TraitsValuePair> getAllSpeciesTraits();
 
 }

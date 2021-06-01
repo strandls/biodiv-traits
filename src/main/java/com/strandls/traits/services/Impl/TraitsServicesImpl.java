@@ -3,11 +3,14 @@
  */
 package com.strandls.traits.services.Impl;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -20,8 +23,10 @@ import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.strandls.activity.pojo.MailData;
 import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.taxonomy.controllers.TaxonomyServicesApi;
+import com.strandls.taxonomy.pojo.BreadCrumb;
 import com.strandls.traits.dao.FactsDAO;
 import com.strandls.traits.dao.TraitTaxonomyDefinitionDao;
 import com.strandls.traits.dao.TraitsDao;
@@ -35,6 +40,7 @@ import com.strandls.traits.pojo.Traits;
 import com.strandls.traits.pojo.TraitsValue;
 import com.strandls.traits.pojo.TraitsValuePair;
 import com.strandls.traits.services.TraitsServices;
+import com.strandls.traits.util.PropertyFileUtil;
 import com.strandls.traits.util.TraitsException;
 
 import net.minidev.json.JSONArray;
@@ -63,11 +69,14 @@ public class TraitsServicesImpl implements TraitsServices {
 	private TaxonomyServicesApi taxonomyService;
 
 	@Inject
-	private TraitsValueDao traistValueDao;
+	private TraitsValueDao traitsValueDao;
+
+	private Long defaultLicenseId = Long
+			.parseLong(PropertyFileUtil.fetchProperty("config.properties", "defaultLicenseId"));
 
 	@Override
-	public List<FactValuePair> getFacts(String objectType, Long objectId) {
-		List<FactValuePair> facts = factsDao.getTraitValuePair(objectType, objectId);
+	public List<FactValuePair> getFacts(String objectType, Long objectId, Long traitId) {
+		List<FactValuePair> facts = factsDao.getTraitValuePair(objectType, objectId, traitId);
 		return facts;
 	}
 
@@ -78,13 +87,13 @@ public class TraitsServicesImpl implements TraitsServices {
 	}
 
 	@Override
-	public List<TraitsValuePair> getAllTraits() {
+	public List<TraitsValuePair> getAllObservationTraits() {
 
 		List<TraitsValuePair> traitValuePair = new ArrayList<TraitsValuePair>();
 		List<Long> allTraits = traitsDao.findAllObservationTrait();
 		Set<Long> traitSet = new HashSet<Long>();
 		traitSet.addAll(allTraits);
-		Map<Traits, List<TraitsValue>> traitValueMap = traitTaxonomyDef.findTraitValueList(traitSet);
+		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, true);
 
 		TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(new Comparator<Traits>() {
 
@@ -105,21 +114,106 @@ public class TraitsServicesImpl implements TraitsServices {
 	}
 
 	@Override
-	public List<TraitsValuePair> getTraitList(Long speciesId) {
+	public List<TraitsValuePair> getAllSpeciesTraits() {
+
+		Set<Long> traitSet = new TreeSet<Long>();
+		List<TraitsValuePair> traitValuePair = new ArrayList<TraitsValuePair>();
+		List<Long> speciesTraits = traitsDao.findAllSpeciesTraits();
+
+		traitSet.addAll(speciesTraits);
+		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false);
+
+		TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(new Comparator<Traits>() {
+
+			@Override
+			public int compare(Traits o1, Traits o2) {
+				if (o1.getId() < o2.getId())
+					return -1;
+				return 1;
+			}
+		});
+		sorted.putAll(traitValueMap);
+
+		for (Traits traits : sorted.keySet()) {
+			traitValuePair.add(new TraitsValuePair(traits, traitValueMap.get(traits)));
+		}
+
+		return traitValuePair;
+
+	}
+
+	@Override
+	public List<TraitsValuePair> getSpeciesTraits(Long taxonId) {
+//		List<Long> speciesTraits = traitsDao.findAllSpeciesTraits();
+
+		Set<Long> traitSet = new TreeSet<Long>();
+		List<TraitsValuePair> traitValuePair = new ArrayList<TraitsValuePair>();
+		List<Long> taxonomyList = new ArrayList<Long>();
+		try {
+			List<BreadCrumb> breadCrumbs = taxonomyService.getTaxonomyBreadCrumb(taxonId.toString());
+			for (BreadCrumb breadCrumb : breadCrumbs) {
+				taxonomyList.add(breadCrumb.getId());
+			}
+			// list of taxonomy id
+			List<TraitTaxonomyDefinition> taxonList = traitTaxonomyDef.findAllByTaxonomyList(taxonomyList);
+			for (TraitTaxonomyDefinition ttd : taxonList) {
+				traitSet.add(ttd.getTraitTaxonId());
+			}
+
+//			check for is observaation false
+			List<Long> filteredSpeciesTraitList = traitsDao.findSpeciesTraitFromList(traitSet);
+			traitSet.clear();
+			traitSet.addAll(filteredSpeciesTraitList);
+
+//			adding the root traits
+			List<Long> rootTrait = traitTaxonomyDef.findAllSpeciesRootTraits();
+			traitSet.addAll(rootTrait);
+
+//			get the values
+
+			Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false);
+
+			TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(
+					new Comparator<Traits>() {
+
+						@Override
+						public int compare(Traits o1, Traits o2) {
+							if (o1.getId() < o2.getId())
+								return -1;
+							return 1;
+						}
+					});
+			sorted.putAll(traitValueMap);
+
+			for (Traits traits : sorted.keySet()) {
+				traitValuePair.add(new TraitsValuePair(traits, traitValueMap.get(traits)));
+			}
+
+			return traitValuePair;
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+		return null;
+	}
+
+	@Override
+	public List<TraitsValuePair> getObservationTraitList(Long speciesGroupId) {
 		List<Long> observationTrait = traitsDao.findAllObservationTrait();
-		List<TraitTaxonomyDefinition> taxonList = traitTaxonomyDef.findAllTraitList(observationTrait); // trait id
-		List<Long> rootTrait = traitTaxonomyDef.findAllRootTrait();
+		List<TraitTaxonomyDefinition> taxonList = traitTaxonomyDef.findAllByTraitList(observationTrait); // trait id
+		List<Long> rootTrait = traitTaxonomyDef.findAllObservationRootTrait();
 		Set<Long> traitSet = new TreeSet<Long>();
 		List<TraitsValuePair> traitValuePair = new ArrayList<TraitsValuePair>();
 		try {
-			if (speciesId == 829) {
+			if (speciesGroupId == 829) {
 				traitSet.addAll(traitsDao.findAllObservationTrait());
 			} else {
 				List<String> taxonomyList = new ArrayList<String>();
 				for (TraitTaxonomyDefinition ttd : taxonList) {
 					taxonomyList.add(ttd.getTaxonomyDefifintionId().toString());
 				}
-				List<String> resultList = taxonomyService.getTaxonomyBySpecies(speciesId.toString(), taxonomyList);
+				List<String> resultList = taxonomyService.getTaxonomyBySpecies(speciesGroupId.toString(), taxonomyList);
 
 				for (String result : resultList) {
 					for (TraitTaxonomyDefinition ttd : taxonList) {
@@ -134,7 +228,7 @@ public class TraitsServicesImpl implements TraitsServices {
 				traitSet.add(trait);
 			}
 
-			Map<Traits, List<TraitsValue>> traitValueMap = traitTaxonomyDef.findTraitValueList(traitSet);
+			Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, true);
 
 			TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(
 					new Comparator<Traits>() {
@@ -162,40 +256,110 @@ public class TraitsServicesImpl implements TraitsServices {
 	public List<FactValuePair> createFacts(HttpServletRequest request, String objectType, Long objectId,
 			FactsCreateData factsCreateData) {
 
-		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-		String userName = profile.getUsername();
-		Long userId = Long.parseLong(profile.getId());
-		List<FactValuePair> validFactList = new ArrayList<FactValuePair>();
-		List<FactValuePair> failedList = new ArrayList<FactValuePair>();
-		for (Map.Entry<Long, List<Long>> entry : factsCreateData.getFactValuePairs().entrySet()) {
-			List<TraitsValue> traitsValue = traistValueDao.findTraitsValue(entry.getKey());
-			for (TraitsValue values : traitsValue) {
-				if (entry.getValue().contains(values.getId())) {
-					validFactList.add(
-							new FactValuePair(values.getTraitInstanceId(), null, values.getId(), null, null, null));
+		try {
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			String userName = profile.getUsername();
+			Long userId = Long.parseLong(profile.getId());
+
+//			to Handle Traits with PreDefined Values
+			for (Map.Entry<Long, List<Long>> entry : factsCreateData.getFactValuePairs().entrySet()) {
+
+				Traits traits = traitsDao.findById(entry.getKey());
+				List<TraitsValue> traitsValue = traitsValueDao.findTraitsValue(entry.getKey());
+
+				for (TraitsValue values : traitsValue) {
+
+					if (entry.getValue().contains(values.getId())) {
+
+						String attribution = userName;
+						if (objectType.equalsIgnoreCase("species.Species"))
+							attribution = traits.getSource();
+						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
+								factsCreateData.getPageTaxonId(), entry.getKey(), values.getId(), null, objectType,
+								null, null, null, null);
+						String description = traits.getName() + ":" + values.getValue();
+
+						saveUpdateFacts(request, objectType, objectId, facts, description, "Added a fact",
+								factsCreateData.getMailData());
+					}
 				}
 			}
 
+//			To handle traits with User Entered Values
+			for (Entry<Long, List<String>> entry : factsCreateData.getFactValueString().entrySet()) {
+				Traits traits = traitsDao.findById(entry.getKey());
+
+				String attribution = userName;
+				if (objectType.equalsIgnoreCase("species.Species"))
+					attribution = traits.getSource();
+
+				if (traits.getDataType().equalsIgnoreCase("COLOR")) {
+					for (String color : entry.getValue()) {
+						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
+								factsCreateData.getPageTaxonId(), entry.getKey(), null, color, objectType, null, null,
+								null, null);
+						String description = traits.getName() + ":" + color;
+
+						saveUpdateFacts(request, objectType, objectId, facts, description, "Added a fact",
+								factsCreateData.getMailData());
+
+					}
+				} else if (traits.getDataType().equalsIgnoreCase("NUMERIC")) {
+					for (String range : entry.getValue()) {
+						String[] value = range.split(":");
+						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
+								factsCreateData.getPageTaxonId(), entry.getKey(), null, value[0], objectType, value[1],
+								null, null, null);
+						String description = traits.getName() + ":" + range;
+
+						saveUpdateFacts(request, objectType, objectId, facts, description, "Added a fact",
+								factsCreateData.getMailData());
+
+					}
+
+				} else if (traits.getDataType().equalsIgnoreCase("DATE")) {
+					for (String date : entry.getValue()) {
+						String value[] = date.split(":");
+						String pattern = "yyyy-MM-dd";
+						SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+						Date fromDate = sdf.parse(value[0]);
+						Date toDate = sdf.parse(value[1]);
+
+						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
+								factsCreateData.getPageTaxonId(), entry.getKey(), null, null, objectType, null,
+								fromDate, toDate, null);
+
+						String description = traits.getName() + ":" + date;
+
+						saveUpdateFacts(request, objectType, objectId, facts, description, "Added a fact",
+								factsCreateData.getMailData());
+
+					}
+				}
+
+			}
+
+			return getFacts(objectType, objectId, null);
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
 		}
 
-		for (FactValuePair factValue : validFactList) {
+		return null;
 
-			Facts fact = new Facts(null, 0L, userName, userId, false, 822L, objectId, null, factValue.getNameId(),
-					factValue.getValueId(), null, objectType, null, null, null, null);
-			Facts result = factsDao.save(fact);
+	}
 
-			String trait = traitsDao.findById(fact.getTraitInstanceId()).getName();
-			String value = traistValueDao.findById(fact.getTraitValueId()).getValue();
-			String description = trait + ":" + value;
-			if (result == null)
-				failedList.add(factValue);
-			logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId, objectId,
-					"observation", result.getId(), "Added a fact", factsCreateData.getMailData());
-
+	private void saveUpdateFacts(HttpServletRequest request, String objectType, Long objectId, Facts facts,
+			String description, String activityType, MailData mailData) {
+		Facts result = factsDao.save(facts);
+		if (result != null) {
+			if (objectType.equalsIgnoreCase("species.participation.Observation"))
+				logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId, objectId,
+						"observation", result.getId(), activityType, mailData);
+			else if (objectType.equalsIgnoreCase("species.Species"))
+				logActivity.logSpeciesActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId,
+						objectId, "species", result.getId(), activityType, mailData);
 		}
-
-		return failedList;
-
 	}
 
 	@Override
@@ -206,7 +370,7 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	@Override
 	public List<TraitsValue> fetchTraitsValue(Long traitId) {
-		List<TraitsValue> result = traistValueDao.findTraitsValue(traitId);
+		List<TraitsValue> result = traitsValueDao.findTraitsValue(traitId);
 		return result;
 	}
 
@@ -216,6 +380,7 @@ public class TraitsServicesImpl implements TraitsServices {
 
 		try {
 			List<Long> traitsValueList = factsUpdateData.getTraitValueList();
+			List<String> valueString = factsUpdateData.getValuesString();
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 			JSONArray userRole = (JSONArray) profile.getAttribute("roles");
 			Long userId = Long.parseLong(profile.getId());
@@ -223,53 +388,125 @@ public class TraitsServicesImpl implements TraitsServices {
 
 			Traits trait = traitsDao.findById(traitId);
 			if (trait.getTraitTypes().equals("SINGLE_CATEGORICAL")) {
-				Long value = traitsValueList.get(0);
-				traitsValueList.clear();
-				traitsValueList.add(value);
+				if (traitsValueList != null && !traitsValueList.isEmpty()) {
+					Long value = traitsValueList.get(0);
+					traitsValueList.clear();
+					traitsValueList.add(value);
+				}
+				if (valueString != null && !valueString.isEmpty()) {
+					String value = valueString.get(0);
+					valueString.clear();
+					valueString.add(value);
+				}
+
 			}
-			if (trait.getIsParticipatory() == false) {
+			String attribution = userName;
+			if (objectType.equalsIgnoreCase("species.Species"))
+				attribution = trait.getSource();
+
+			if (objectType.equalsIgnoreCase("species.participation.Observation")
+					&& trait.getIsParticipatory() == false) {
 				Long authorId = factsDao.getObservationAuthor(objectId.toString());
 				if (!(userRole.contains("ROLE_ADMIN") || authorId != userId)) {
 					throw new TraitsException("User not allowed to add this traits");
 				}
 			}
 
-			List<TraitsValue> valueList = traistValueDao.findTraitsValue(traitId);
+//			traits with preDefined list
+			List<TraitsValue> valueList = traitsValueDao.findTraitsValue(traitId);
 			List<Long> validValueId = new ArrayList<Long>();
 			for (TraitsValue tv : valueList) {
 				validValueId.add(tv.getId());
 			}
 
 			List<Long> previousValueId = new ArrayList<Long>();
-
+//			deleting previous fatcs
 			List<Facts> previousFacts = factsDao.fetchByTraitId(objectType, objectId, traitId);
-			for (Facts fact : previousFacts) {
-				if (!(traitsValueList.contains(fact.getTraitValueId()))) {
-					factsDao.delete(fact);
+			if (previousFacts != null && !previousFacts.isEmpty()) {
+				for (Facts fact : previousFacts) {
+
+					if (traitsValueList != null && !traitsValueList.isEmpty()) {
+						if (!(traitsValueList.contains(fact.getTraitValueId()))) {
+							factsDao.delete(fact);
+						}
+						previousValueId.add(fact.getTraitValueId());
+					} else if (valueString != null && !valueString.isEmpty()) {
+
+						if (trait.getDataType().equalsIgnoreCase("COLOR")) {
+							if (!(valueString.contains(fact.getValue()))) {
+								factsDao.delete(fact);
+							}
+						} else if (trait.getDataType().equalsIgnoreCase("NUMERIC")) {
+							factsDao.delete(fact);
+
+						} else if (trait.getDataType().equalsIgnoreCase("DATE")) {
+							factsDao.delete(fact);
+						}
+					}
 				}
-				previousValueId.add(fact.getTraitValueId());
 			}
 
 			String activityType = "Updated fact";
-			if (previousValueId.isEmpty())
+			if (previousFacts == null || previousFacts.isEmpty())
 				activityType = "Added a fact";
 
-			for (Long newValue : traitsValueList) {
-				if (!(previousValueId.contains(newValue)) && validValueId.contains(newValue)) {
-					Facts fact = new Facts(null, 0L, userName, userId, false, 822L, objectId, null, traitId, newValue,
-							null, objectType, null, null, null, null);
-					fact = factsDao.save(fact);
-					String traitName = trait.getName();
-					String value = traistValueDao.findById(fact.getTraitValueId()).getValue();
-					String description = traitName + ":" + value;
-					logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId,
-							objectId, "observation", fact.getId(), activityType, factsUpdateData.getMailData());
+//			adding new facts
+			if (traitsValueList != null && !traitsValueList.isEmpty()) {
+				for (Long newValue : traitsValueList) {
+					if (!(previousValueId.contains(newValue)) && validValueId.contains(newValue)) {
+						Facts fact = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId, null,
+								traitId, newValue, null, objectType, null, null, null, null);
 
+						String value = traitsValueDao.findById(fact.getTraitValueId()).getValue();
+						String description = trait.getName() + ":" + value;
+
+						saveUpdateFacts(request, objectType, objectId, fact, description, activityType,
+								factsUpdateData.getMailData());
+
+					}
+				}
+			} else if (valueString != null && !valueString.isEmpty()) {
+				for (String value : valueString) {
+					if (trait.getDataType().equalsIgnoreCase("COLOR")) {
+						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
+								factsUpdateData.getPageTaxonId(), traitId, null, value.trim(), objectType, null, null,
+								null, null);
+						String description = trait.getName() + ":" + value;
+
+						saveUpdateFacts(request, objectType, objectId, facts, description, activityType,
+								factsUpdateData.getMailData());
+
+					} else if (trait.getDataType().equalsIgnoreCase("NUMERIC")) {
+
+						String[] values = value.split(":");
+						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
+								factsUpdateData.getPageTaxonId(), traitId, null, values[0].trim(), objectType,
+								values[1].trim(), null, null, null);
+						String description = trait.getName() + ":" + value;
+
+						saveUpdateFacts(request, objectType, objectId, facts, description, activityType,
+								factsUpdateData.getMailData());
+
+					} else if (trait.getDataType().equalsIgnoreCase("DATE")) {
+						String values[] = value.split(":");
+						String pattern = "yyyy-MM-dd";
+						SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+						Date fromDate = sdf.parse(values[0].trim());
+						Date toDate = sdf.parse(values[1].trim());
+
+						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
+								factsUpdateData.getPageTaxonId(), traitId, null, null, objectType, null, fromDate,
+								toDate, null);
+
+						String description = trait.getName() + ":" + value;
+
+						saveUpdateFacts(request, objectType, objectId, facts, description, activityType,
+								factsUpdateData.getMailData());
+					}
 				}
 			}
-			List<FactValuePair> result = getFacts(objectType, objectId);
 
-			return result;
+			return getFacts(objectType, objectId, traitId);
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
