@@ -7,7 +7,7 @@
 	<artifactId>traits-api</artifactId>
 	<version>1.0.0</version>
 	<packaging>war</packaging>
-	<name>biodiv-traits-api</name>
+	<name>biodiv-traits</name>
 	<url>https://github.com/strandls/biodiv-traits</url>
 
 	<properties>
