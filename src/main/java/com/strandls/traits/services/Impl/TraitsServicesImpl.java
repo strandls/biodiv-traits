@@ -407,7 +407,7 @@ public class TraitsServicesImpl implements TraitsServices {
 			if (objectType.equalsIgnoreCase("species.participation.Observation")
 					&& trait.getIsParticipatory() == false) {
 				Long authorId = factsDao.getObservationAuthor(objectId.toString());
-				if (!(userRole.contains("ROLE_ADMIN") || authorId != userId)) {
+				if (!(userRole.contains("ROLE_ADMIN") || authorId .equals(userId))) {
 					throw new TraitsException("User not allowed to add this traits");
 				}
 			}
