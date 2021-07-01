@@ -7,6 +7,13 @@ import org.slf4j.LoggerFactory;
 
 public class PropertyFileUtil {
 
+	/**
+	 * 
+	 */
+	private PropertyFileUtil() {
+		super();
+	}
+
 	private static final Logger logger = LoggerFactory.getLogger(PropertyFileUtil.class);
 
 	public static Properties fetchProperty(String fileName) {

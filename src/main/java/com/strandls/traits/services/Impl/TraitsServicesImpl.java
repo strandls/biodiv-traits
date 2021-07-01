@@ -40,6 +40,10 @@ import com.strandls.traits.pojo.Traits;
 import com.strandls.traits.pojo.TraitsValue;
 import com.strandls.traits.pojo.TraitsValuePair;
 import com.strandls.traits.services.TraitsServices;
+import com.strandls.traits.util.Constants.DATATYPE;
+import com.strandls.traits.util.Constants.OBJECTTYPE;
+import com.strandls.traits.util.Constants.TRAITMSG;
+import com.strandls.traits.util.Constants.TRAITTYPE;
 import com.strandls.traits.util.PropertyFileUtil;
 import com.strandls.traits.util.TraitsException;
 
@@ -76,14 +80,12 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	@Override
 	public List<FactValuePair> getFacts(String objectType, Long objectId, Long traitId) {
-		List<FactValuePair> facts = factsDao.getTraitValuePair(objectType, objectId, traitId);
-		return facts;
+		return factsDao.getTraitValuePair(objectType, objectId, traitId);
 	}
 
 	@Override
 	public FactValuePair getFactIbp(Long id) {
-		FactValuePair fact = factsDao.getTraitvaluePairIbp(id);
-		return fact;
+		return factsDao.getTraitvaluePairIbp(id);
 	}
 
 	@Override
@@ -144,7 +146,6 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	@Override
 	public List<TraitsValuePair> getSpeciesTraits(Long taxonId) {
-//		List<Long> speciesTraits = traitsDao.findAllSpeciesTraits();
 
 		Set<Long> traitSet = new TreeSet<Long>();
 		List<TraitsValuePair> traitValuePair = new ArrayList<TraitsValuePair>();
@@ -272,15 +273,15 @@ public class TraitsServicesImpl implements TraitsServices {
 					if (entry.getValue().contains(values.getId())) {
 
 						String attribution = userName;
-						if (objectType.equalsIgnoreCase("species.Species"))
+						if (objectType.equalsIgnoreCase(OBJECTTYPE.SPECIES.getValue()))
 							attribution = traits.getSource();
 						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
 								factsCreateData.getPageTaxonId(), entry.getKey(), values.getId(), null, objectType,
 								null, null, null, null);
 						String description = traits.getName() + ":" + values.getValue();
 
-						saveUpdateFacts(request, objectType, objectId, facts, description, "Added a fact",
-								factsCreateData.getMailData());
+						saveUpdateFacts(request, objectType, objectId, facts, description,
+								TRAITMSG.ADDEDFACT.getValue(), factsCreateData.getMailData());
 					}
 				}
 			}
@@ -290,21 +291,21 @@ public class TraitsServicesImpl implements TraitsServices {
 				Traits traits = traitsDao.findById(entry.getKey());
 
 				String attribution = userName;
-				if (objectType.equalsIgnoreCase("species.Species"))
+				if (objectType.equalsIgnoreCase(OBJECTTYPE.SPECIES.getValue()))
 					attribution = traits.getSource();
 
-				if (traits.getDataType().equalsIgnoreCase("COLOR")) {
+				if (traits.getDataType().equalsIgnoreCase(DATATYPE.COLOR.getValue())) {
 					for (String color : entry.getValue()) {
 						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
 								factsCreateData.getPageTaxonId(), entry.getKey(), null, color, objectType, null, null,
 								null, null);
 						String description = traits.getName() + ":" + color;
 
-						saveUpdateFacts(request, objectType, objectId, facts, description, "Added a fact",
-								factsCreateData.getMailData());
+						saveUpdateFacts(request, objectType, objectId, facts, description,
+								TRAITMSG.ADDEDFACT.getValue(), factsCreateData.getMailData());
 
 					}
-				} else if (traits.getDataType().equalsIgnoreCase("NUMERIC")) {
+				} else if (traits.getDataType().equalsIgnoreCase(DATATYPE.NUMERIC.getValue())) {
 					for (String range : entry.getValue()) {
 						String[] value = range.split(":");
 						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
@@ -312,14 +313,14 @@ public class TraitsServicesImpl implements TraitsServices {
 								null, null, null);
 						String description = traits.getName() + ":" + range;
 
-						saveUpdateFacts(request, objectType, objectId, facts, description, "Added a fact",
-								factsCreateData.getMailData());
+						saveUpdateFacts(request, objectType, objectId, facts, description,
+								TRAITMSG.ADDEDFACT.getValue(), factsCreateData.getMailData());
 
 					}
 
-				} else if (traits.getDataType().equalsIgnoreCase("DATE")) {
+				} else if (traits.getDataType().equalsIgnoreCase(DATATYPE.DATE.getValue())) {
 					for (String date : entry.getValue()) {
-						String value[] = date.split(":");
+						String[] value = date.split(":");
 						String pattern = "yyyy-MM-dd";
 						SimpleDateFormat sdf = new SimpleDateFormat(pattern);
 						Date fromDate = sdf.parse(value[0]);
@@ -331,8 +332,8 @@ public class TraitsServicesImpl implements TraitsServices {
 
 						String description = traits.getName() + ":" + date;
 
-						saveUpdateFacts(request, objectType, objectId, facts, description, "Added a fact",
-								factsCreateData.getMailData());
+						saveUpdateFacts(request, objectType, objectId, facts, description,
+								TRAITMSG.ADDEDFACT.getValue(), factsCreateData.getMailData());
 
 					}
 				}
@@ -353,10 +354,10 @@ public class TraitsServicesImpl implements TraitsServices {
 			String description, String activityType, MailData mailData) {
 		Facts result = factsDao.save(facts);
 		if (result != null) {
-			if (objectType.equalsIgnoreCase("species.participation.Observation"))
-				logActivity.LogActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId, objectId,
+			if (objectType.equalsIgnoreCase(OBJECTTYPE.OBSERVATION.getValue()))
+				logActivity.logActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId, objectId,
 						"observation", result.getId(), activityType, mailData);
-			else if (objectType.equalsIgnoreCase("species.Species"))
+			else if (objectType.equalsIgnoreCase(OBJECTTYPE.SPECIES.getValue()))
 				logActivity.logSpeciesActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId,
 						objectId, "species", result.getId(), activityType, mailData);
 		}
@@ -364,14 +365,12 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	@Override
 	public List<Facts> fetchByTaxonId(Long taxonId) {
-		List<Facts> result = factsDao.findByTaxonId(taxonId);
-		return result;
+		return factsDao.findByTaxonId(taxonId);
 	}
 
 	@Override
 	public List<TraitsValue> fetchTraitsValue(Long traitId) {
-		List<TraitsValue> result = traitsValueDao.findTraitsValue(traitId);
-		return result;
+		return traitsValueDao.findTraitsValue(traitId);
 	}
 
 	@Override
@@ -387,7 +386,7 @@ public class TraitsServicesImpl implements TraitsServices {
 			String userName = profile.getUsername();
 
 			Traits trait = traitsDao.findById(traitId);
-			if (trait.getTraitTypes().equals("SINGLE_CATEGORICAL")) {
+			if (trait.getTraitTypes().equals(TRAITTYPE.SINGLECATEGORICAL.getValue())) {
 				if (traitsValueList != null && !traitsValueList.isEmpty()) {
 					Long value = traitsValueList.get(0);
 					traitsValueList.clear();
@@ -401,13 +400,12 @@ public class TraitsServicesImpl implements TraitsServices {
 
 			}
 			String attribution = userName;
-			if (objectType.equalsIgnoreCase("species.Species"))
+			if (objectType.equalsIgnoreCase(OBJECTTYPE.SPECIES.getValue()))
 				attribution = trait.getSource();
 
-			if (objectType.equalsIgnoreCase("species.participation.Observation")
-					&& trait.getIsParticipatory() == false) {
+			if (objectType.equalsIgnoreCase(OBJECTTYPE.OBSERVATION.getValue()) && !trait.getIsParticipatory()) {
 				Long authorId = factsDao.getObservationAuthor(objectId.toString());
-				if (!(userRole.contains("ROLE_ADMIN") || authorId .equals(userId))) {
+				if (!(userRole.contains("ROLE_ADMIN") || authorId.equals(userId))) {
 					throw new TraitsException("User not allowed to add this traits");
 				}
 			}
@@ -432,23 +430,23 @@ public class TraitsServicesImpl implements TraitsServices {
 						previousValueId.add(fact.getTraitValueId());
 					} else if (valueString != null && !valueString.isEmpty()) {
 
-						if (trait.getDataType().equalsIgnoreCase("COLOR")) {
+						if (trait.getDataType().equalsIgnoreCase(DATATYPE.COLOR.getValue())) {
 							if (!(valueString.contains(fact.getValue()))) {
 								factsDao.delete(fact);
 							}
-						} else if (trait.getDataType().equalsIgnoreCase("NUMERIC")) {
+						} else if (trait.getDataType().equalsIgnoreCase(DATATYPE.NUMERIC.getValue())) {
 							factsDao.delete(fact);
 
-						} else if (trait.getDataType().equalsIgnoreCase("DATE")) {
+						} else if (trait.getDataType().equalsIgnoreCase(DATATYPE.DATE.getValue())) {
 							factsDao.delete(fact);
 						}
 					}
 				}
 			}
 
-			String activityType = "Updated fact";
+			String activityType = TRAITMSG.UPDATEDFACT.getValue();
 			if (previousFacts == null || previousFacts.isEmpty())
-				activityType = "Added a fact";
+				activityType = TRAITMSG.ADDEDFACT.getValue();
 
 //			adding new facts
 			if (traitsValueList != null && !traitsValueList.isEmpty()) {
@@ -467,7 +465,7 @@ public class TraitsServicesImpl implements TraitsServices {
 				}
 			} else if (valueString != null && !valueString.isEmpty()) {
 				for (String value : valueString) {
-					if (trait.getDataType().equalsIgnoreCase("COLOR")) {
+					if (trait.getDataType().equalsIgnoreCase(DATATYPE.COLOR.getValue())) {
 						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
 								factsUpdateData.getPageTaxonId(), traitId, null, value.trim(), objectType, null, null,
 								null, null);
@@ -476,7 +474,7 @@ public class TraitsServicesImpl implements TraitsServices {
 						saveUpdateFacts(request, objectType, objectId, facts, description, activityType,
 								factsUpdateData.getMailData());
 
-					} else if (trait.getDataType().equalsIgnoreCase("NUMERIC")) {
+					} else if (trait.getDataType().equalsIgnoreCase(DATATYPE.NUMERIC.getValue())) {
 
 						String[] values = value.split(":");
 						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
@@ -487,7 +485,7 @@ public class TraitsServicesImpl implements TraitsServices {
 						saveUpdateFacts(request, objectType, objectId, facts, description, activityType,
 								factsUpdateData.getMailData());
 
-					} else if (trait.getDataType().equalsIgnoreCase("DATE")) {
+					} else if (trait.getDataType().equalsIgnoreCase(DATATYPE.DATE.getValue())) {
 						String values[] = value.split(":");
 						String pattern = "yyyy-MM-dd";
 						SimpleDateFormat sdf = new SimpleDateFormat(pattern);
@@ -515,7 +513,14 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	@Override
 	public List<Long> fetchTaxonIdByValueId(String valueList) {
-		List<Facts> factsResult = factsDao.fetchByValueList(valueList);
+
+		List<Integer> valList = new ArrayList<Integer>();
+
+		for (String value : valueList.split(",")) {
+			valList.add(Integer.parseInt(value));
+		}
+
+		List<Facts> factsResult = factsDao.fetchByValueList(valList);
 		List<Long> taxonList = new ArrayList<Long>();
 		for (Facts fact : factsResult)
 			taxonList.add(fact.getPageTaxonId());
